@@ -1,0 +1,10 @@
+name = "PackageCalculus"
+leanOptions = [["autoImplicit", false], ["weak.linter.docBlame", false]]
+
+[[lean_lib]]
+name = "PackageCalculus"
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "8f9d9cff6bd728b17a24e163c9402775d9e6a365"
