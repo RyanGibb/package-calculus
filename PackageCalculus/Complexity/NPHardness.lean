@@ -102,120 +102,23 @@ theorem satRed_soundness
     (hsat : ∀ j ∈ clauses, (φ j).satisfiedBy σ) :
     IsResolution (satRedReal φ clauses) (satRedDeps φ clauses)
       (SATRedName.root, SATRedVersion.unit) (soundnessWitness σ φ clauses) := by
-  constructor
-  · -- subset
-    intro p hp
-    simp only [soundnessWitness, Finset.mem_union, Finset.mem_singleton, Finset.mem_biUnion,
-      Finset.mem_image, Finset.mem_insert] at hp
-    rcases hp with ((hp | ⟨j, hj, l, hl, hp⟩) | ⟨j, hj, hp⟩)
-    · -- root: p = (root, unit)
-      rw [hp]
-      exact Finset.mem_union_left _
-        (Finset.mem_union_left _ (Finset.mem_singleton.mpr rfl))
-    · -- var: (var l.var, bool (σ l.var)) = p
-      rw [← hp]
-      apply Finset.mem_union_left
-      apply Finset.mem_union_right
-      rw [Finset.mem_biUnion]
-      exact ⟨j, hj, Finset.mem_biUnion.mpr ⟨l, by
-        simp only [Finset.mem_insert, Finset.mem_singleton]; exact hl,
-        by cases (σ l.var) <;> simp⟩⟩
-    · -- clause: (clause j, lit (selectLiteral ...)) = p
-      rw [← hp]
-      apply Finset.mem_union_right
-      rw [Finset.mem_biUnion]
-      refine ⟨j, hj, ?_⟩
-      have hmem := selectLiteral_mem σ (φ j)
-      simp only [Finset.mem_insert, Finset.mem_singleton] at hmem ⊢
-      rcases hmem with h | h | h <;> simp [h]
-  · -- root_mem
-    show (SATRedName.root, SATRedVersion.unit) ∈ soundnessWitness σ φ clauses
-    unfold soundnessWitness
-    exact Finset.mem_union_left _ (Finset.mem_union_left _ (Finset.mem_singleton.mpr rfl))
-  · -- dep_closure
-    intro p hp m vs hd
-    simp only [satRedDeps, Finset.mem_union, Finset.mem_image, Finset.mem_biUnion,
-      Finset.mem_insert, Finset.mem_singleton] at hd
-    rcases hd with ⟨j, hj, heq⟩ | ⟨j, hj, l, hl, heq⟩
-    · -- root → clause dependency
-      simp only [Prod.mk.injEq] at heq
-      obtain ⟨⟨rfl, rfl⟩, rfl, rfl⟩ := heq
-      refine ⟨SATRedVersion.lit (selectLiteral σ (φ j)), ?_, ?_⟩
-      · have hmem := selectLiteral_mem σ (φ j)
-        simp only [Finset.mem_insert, Finset.mem_singleton]
-        simp only [Finset.mem_insert, Finset.mem_singleton] at hmem
-        rcases hmem with h | h | h
-        · exact Or.inl (congrArg SATRedVersion.lit h)
-        · exact Or.inr (Or.inl (congrArg SATRedVersion.lit h))
-        · exact Or.inr (Or.inr (congrArg SATRedVersion.lit h))
-      · simp only [soundnessWitness, Finset.mem_union, Finset.mem_image, Finset.mem_singleton]
-        right; exact ⟨j, hj, rfl⟩
-    · -- clause → variable dependency
-      -- heq : ((clause j, lit l), var l.var, {bool l.pos}) = (p, m, vs)
-      -- after Prod.mk.injEq, obtain substitutes p, m, vs
-      simp only [Prod.mk.injEq] at heq
-      obtain ⟨⟨rfl, rfl⟩, rfl, rfl⟩ := heq
-      refine ⟨SATRedVersion.bool l.pos, Finset.mem_singleton.mpr rfl, ?_⟩
-      -- hp says (clause j, lit l) ∈ soundnessWitness
-      simp only [soundnessWitness, Finset.mem_union, Finset.mem_singleton, Finset.mem_biUnion,
-        Finset.mem_image, Finset.mem_insert] at hp
-      -- From mem_image, the clause case gives: ∃ j' ∈ clauses, (clause j', lit (sel σ (φ j'))) = (clause j, lit l)
-      rcases hp with ((h | ⟨_, _, _, _, h⟩) | ⟨j', hj', h⟩)
-      · exact nomatch congrArg (·.1) h
-      · exact nomatch congrArg (·.1) h
-      · -- h : (clause j', lit (selectLiteral σ (φ j'))) = (clause j, lit l)
-        have hj_eq : j' = j := SATRedName.clause.inj (congrArg (·.1) h)
-        have hl_eq : selectLiteral σ (φ j') = l := SATRedVersion.lit.inj (congrArg (·.2) h)
-        -- l.eval σ = true since l = selectLiteral σ (φ j') and clause j' is satisfied
-        have heval_l : l.eval σ = true := by
-          rw [← hl_eq]; exact selectLiteral_eval (hsat j' hj')
-        rw [Literal.eval_true_iff] at heval_l
-        -- Need to show (var l.var, bool l.pos) ∈ soundnessWitness
-        simp only [soundnessWitness, Finset.mem_union, Finset.mem_singleton, Finset.mem_biUnion,
-          Finset.mem_image, Finset.mem_insert]
-        left; right
-        -- Use j' (= j) and l, which is the selectLiteral, hence in the literal finset
-        have hl_mem : l ∈ ({(φ j').l₁, (φ j').l₂, (φ j').l₃} : Finset (Literal Var)) := by
-          rw [← hl_eq]; exact selectLiteral_mem σ (φ j')
-        simp only [Finset.mem_insert, Finset.mem_singleton] at hl_mem
-        exact ⟨j', hj', l, hl_mem, by rw [heval_l]⟩
-  · -- version_unique
-    intro n v v' hv hv'
-    simp only [soundnessWitness, Finset.mem_union, Finset.mem_singleton, Finset.mem_biUnion,
-      Finset.mem_image, Finset.mem_insert] at hv hv'
-    -- hv patterns:
-    --   root:   (n, v) = (root, unit)                     [from mem_singleton]
-    --   var:    ∃ j hj l hl, (var l.var, bool (σ l.var)) = (n, v)  [from mem_image]
-    --   clause: ∃ j hj, (clause j, lit ...) = (n, v)              [from mem_image]
-    rcases hv with ((hv | ⟨_, _, _, _, hv⟩) | ⟨_, _, hv⟩)
-    · -- (n,v) = (root, unit)
-      rcases hv' with ((hv' | ⟨_, _, _, _, hv'⟩) | ⟨_, _, hv'⟩)
-      · exact (congrArg (·.2) hv).trans (congrArg (·.2) hv').symm
-      · -- root = var: hv gives n = root, hv' gives var _ = n
-        exact nomatch (congrArg (·.1) hv').trans (congrArg (·.1) hv)
-      · -- root = clause: hv gives n = root, hv' gives clause _ = n
-        exact nomatch (congrArg (·.1) hv').trans (congrArg (·.1) hv)
-    · -- (var l.var, bool (σ l.var)) = (n, v)
-      rcases hv' with ((hv' | ⟨_, _, _, _, hv'⟩) | ⟨_, _, hv'⟩)
-      · -- var = root: hv gives var _ = n, hv' gives n = root
-        exact nomatch (congrArg (·.1) hv).trans (congrArg (·.1) hv')
-      · -- var = var: both have (var _, bool _) = (n, _)
-        have hv2 := congrArg (·.2) hv   -- bool (σ w₁.var) = v
-        have hv2' := congrArg (·.2) hv'  -- bool (σ w₂.var) = v'
-        have heq := SATRedName.var.inj ((congrArg (·.1) hv).trans (congrArg (·.1) hv').symm)
-        simp only [heq] at hv2
-        exact hv2.symm.trans hv2'
-      · -- var = clause
-        exact nomatch (congrArg (·.1) hv).trans (congrArg (·.1) hv').symm
-    · -- (clause j, lit ...) = (n, v)
-      rcases hv' with ((hv' | ⟨_, _, _, _, hv'⟩) | ⟨_, _, hv'⟩)
-      · -- clause = root
-        exact nomatch (congrArg (·.1) hv).trans (congrArg (·.1) hv')
-      · -- clause = var
-        exact nomatch (congrArg (·.1) hv).trans (congrArg (·.1) hv').symm
-      · -- clause = clause
-        have := SATRedName.clause.inj ((congrArg (·.1) hv).trans (congrArg (·.1) hv').symm)
-        subst this; exact (congrArg (·.2) hv).symm.trans (congrArg (·.2) hv')
+  constructor;
+  · intro p hp;
+    unfold soundnessWitness satRedReal at *; simp_all +decide ;
+    rcases hp with ( rfl | ⟨ a, ha, rfl | rfl | rfl ⟩ | ⟨ a, ha, rfl ⟩ ) <;> simp +decide [ selectLiteral ] at *; all_goals grind;
+  · exact Finset.mem_union_left _ ( Finset.mem_union_left _ ( Finset.mem_singleton_self _ ) );
+  · intro p hp m vs h;
+    unfold satRedDeps at h; simp_all +decide [ Finset.mem_union, Finset.mem_image ] ;
+    rcases h with ( ⟨ j, hj, rfl, rfl, rfl ⟩ | ⟨ j, hj, h | h | h ⟩ ) <;> simp_all +decide [ soundnessWitness ];
+    · grind +locals;
+    · have := selectLiteral_eval ( hsat j hj ) ; simp_all +decide [ Literal.eval_true_iff ] ;
+      exact ⟨ j, hj, Or.inl ⟨ rfl, this.symm ⟩ ⟩;
+    · have := selectLiteral_eval ( hsat j hj ) ; simp_all +decide [ Literal.eval ] ;
+      grind;
+    · have := selectLiteral_eval ( hsat j hj ) ; simp_all +decide [ Literal.eval ] ;
+      lia;
+  · unfold VersionUnique soundnessWitness;
+    grind
 
 /-! ## Completeness: resolution → satisfying assignment -/
 
@@ -251,36 +154,25 @@ theorem satRed_completeness
   obtain ⟨cv, hcv_mem, hcv_S⟩ := hres.dep_closure _ hres.root_mem _ _ hdep_root
   unfold ThreeClause.satisfiedBy
   simp only [Finset.mem_insert, Finset.mem_singleton] at hcv_mem
+  have step : ∀ (li : Literal Var),
+      li ∈ ({(φ j).l₁, (φ j).l₂, (φ j).l₃} : Finset _) →
+      (SATRedName.clause j, SATRedVersion.lit li) ∈ S →
+      li.eval (extractAssignment S) = true := by
+    intro li _ hli_S
+    have hdep_cl : ((SATRedName.clause j, SATRedVersion.lit li),
+        SATRedName.var li.var,
+        ({SATRedVersion.bool li.pos} : Finset _)) ∈ satRedDeps φ clauses := by
+      simp only [satRedDeps, Finset.mem_union, Finset.mem_biUnion, Finset.mem_image,
+        Finset.mem_insert, Finset.mem_singleton]
+      right
+      simp only [Finset.mem_insert, Finset.mem_singleton] at *
+      exact ⟨j, hj, li, ‹_›, rfl⟩
+    obtain ⟨vv, hvv_mem, hvv_S⟩ := hres.dep_closure _ hli_S _ _ hdep_cl
+    rw [Literal.eval_true_iff]
+    exact extractAssignment_spec ((Finset.mem_singleton.mp hvv_mem) ▸ hvv_S) hres.version_unique
   rcases hcv_mem with heq | heq | heq
-  · left
-    have hdep_cl : ((SATRedName.clause j, SATRedVersion.lit (φ j).l₁),
-        SATRedName.var (φ j).l₁.var,
-        ({SATRedVersion.bool (φ j).l₁.pos} : Finset _)) ∈ satRedDeps φ clauses := by
-      simp only [satRedDeps, Finset.mem_union, Finset.mem_biUnion, Finset.mem_image,
-        Finset.mem_insert, Finset.mem_singleton]
-      right; exact ⟨j, hj, (φ j).l₁, Or.inl rfl, rfl⟩
-    obtain ⟨vv, hvv_mem, hvv_S⟩ := hres.dep_closure _ (heq ▸ hcv_S) _ _ hdep_cl
-    rw [Literal.eval_true_iff]
-    exact extractAssignment_spec ((Finset.mem_singleton.mp hvv_mem) ▸ hvv_S) hres.version_unique
-  · right; left
-    have hdep_cl : ((SATRedName.clause j, SATRedVersion.lit (φ j).l₂),
-        SATRedName.var (φ j).l₂.var,
-        ({SATRedVersion.bool (φ j).l₂.pos} : Finset _)) ∈ satRedDeps φ clauses := by
-      simp only [satRedDeps, Finset.mem_union, Finset.mem_biUnion, Finset.mem_image,
-        Finset.mem_insert, Finset.mem_singleton]
-      right; exact ⟨j, hj, (φ j).l₂, Or.inr (Or.inl rfl), rfl⟩
-    obtain ⟨vv, hvv_mem, hvv_S⟩ := hres.dep_closure _ (heq ▸ hcv_S) _ _ hdep_cl
-    rw [Literal.eval_true_iff]
-    exact extractAssignment_spec ((Finset.mem_singleton.mp hvv_mem) ▸ hvv_S) hres.version_unique
-  · right; right
-    have hdep_cl : ((SATRedName.clause j, SATRedVersion.lit (φ j).l₃),
-        SATRedName.var (φ j).l₃.var,
-        ({SATRedVersion.bool (φ j).l₃.pos} : Finset _)) ∈ satRedDeps φ clauses := by
-      simp only [satRedDeps, Finset.mem_union, Finset.mem_biUnion, Finset.mem_image,
-        Finset.mem_insert, Finset.mem_singleton]
-      right; exact ⟨j, hj, (φ j).l₃, Or.inr (Or.inr rfl), rfl⟩
-    obtain ⟨vv, hvv_mem, hvv_S⟩ := hres.dep_closure _ (heq ▸ hcv_S) _ _ hdep_cl
-    rw [Literal.eval_true_iff]
-    exact extractAssignment_spec ((Finset.mem_singleton.mp hvv_mem) ▸ hvv_S) hres.version_unique
+  · exact Or.inl (step _ (by simp) (heq ▸ hcv_S))
+  · exact Or.inr (Or.inl (step _ (by simp) (heq ▸ hcv_S)))
+  · exact Or.inr (Or.inr (step _ (by simp) (heq ▸ hcv_S)))
 
 end PackageCalculus.Complexity

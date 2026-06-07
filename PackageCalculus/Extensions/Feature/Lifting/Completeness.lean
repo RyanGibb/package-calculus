@@ -10,68 +10,27 @@ theorem liftResolution_completenessWitness
     (S_f : Finset (Package N V × Finset F))
     (hfu : ∀ n v v' fs fs', ((n, v), fs) ∈ S_f → ((n, v'), fs') ∈ S_f → fs = fs') :
     liftResolution (hfn := hfn) (completenessWitness S_f) = S_f := by
-  ext ⟨⟨pn, pv⟩, fs⟩
-  constructor
-  · -- forward: ∈ liftResolution → ∈ S_f
-    intro h
-    obtain ⟨n, v, horig, heq⟩ := liftResolution_elim h
-    simp only [Prod.mk.injEq] at heq
-    obtain ⟨⟨rfl, rfl⟩, hfs_eq⟩ := heq
-    -- horig : (origN pn, pv) ∈ completenessWitness S_f
-    simp only [completenessWitness, Finset.mem_union, Finset.mem_image,
-      Finset.mem_biUnion] at horig
-    rcases horig with ⟨⟨⟨n', v'⟩, fs'⟩, hmem, heq'⟩ | ⟨⟨⟨n', v'⟩, fs'⟩, hmem', hfmem⟩
-    · simp only [Prod.mk.injEq] at heq'
-      obtain ⟨h1, h2⟩ := heq'
-      have hn := hfn.origN.injective h1
-      subst hn; subst h2
-      suffices hfs : fs = fs' by subst hfs; exact hmem
-      rw [hfs_eq]; ext f
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-      constructor
-      · intro hf
-        simp only [completenessWitness, Finset.mem_union, Finset.mem_image,
-          Finset.mem_biUnion] at hf
-        rcases hf with ⟨⟨⟨n₀, v₀⟩, fs₀⟩, _, heq''⟩ |
-            ⟨⟨⟨n₀, v₀⟩, fs₀⟩, hmem₀, hfmem'⟩
-        · simp only [Prod.mk.injEq] at heq''
-          exact absurd heq''.1 (hfn.origN_ne_featuredN _ _ _)
-        · obtain ⟨f', hf', heq''⟩ := hfmem'
-          simp only [Prod.mk.injEq] at heq''
-          obtain ⟨h1, rfl⟩ := heq''
-          obtain ⟨rfl, rfl⟩ := hfn.featuredN_injective h1
-          exact hfu _ _ _ _ _ hmem hmem₀ ▸ hf'
-      · intro hf
-        exact Finset.mem_union.mpr (Or.inr (Finset.mem_biUnion.mpr
-          ⟨⟨(n', v'), fs'⟩, hmem, Finset.mem_image.mpr ⟨f, hf, rfl⟩⟩))
-    · -- origN pn = featuredN ... contradiction
-      obtain ⟨f', _, heq'⟩ := hfmem
-      simp only [Prod.mk.injEq] at heq'
-      exact absurd heq'.1.symm (hfn.origN_ne_featuredN _ _ _)
-  · -- backward: ∈ S_f → ∈ liftResolution
-    intro hmem
-    have horig : (hfn.origN pn, pv) ∈ completenessWitness (N' := N') S_f :=
-      Finset.mem_union.mpr (Or.inl (Finset.mem_image.mpr ⟨⟨(pn, pv), fs⟩, hmem, rfl⟩))
-    have h := mem_liftResolution' horig
-    convert h using 1
-    simp only [Prod.mk.injEq, true_and]
-    ext f
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-    constructor
-    · intro hf
-      exact Finset.mem_union.mpr (Or.inr (Finset.mem_biUnion.mpr
-        ⟨⟨(pn, pv), fs⟩, hmem, Finset.mem_image.mpr ⟨f, hf, rfl⟩⟩))
-    · intro hf
-      simp only [completenessWitness, Finset.mem_union, Finset.mem_image,
-        Finset.mem_biUnion] at hf
-      rcases hf with ⟨⟨⟨n₀, v₀⟩, fs₀⟩, _, heq'⟩ | ⟨⟨⟨n₀, v₀⟩, fs₀⟩, hmem', hfmem'⟩
-      · simp only [Prod.mk.injEq] at heq'
-        exact absurd heq'.1 (hfn.origN_ne_featuredN _ _ _)
-      · obtain ⟨f', hf', heq'⟩ := hfmem'
-        simp only [Prod.mk.injEq] at heq'
-        obtain ⟨h1, rfl⟩ := heq'
-        obtain ⟨rfl, rfl⟩ := hfn.featuredN_injective h1
-        exact hfu _ _ _ _ _ hmem hmem' ▸ hf'
+  ext p;
+  constructor <;> intro hp;
+  · obtain ⟨ n, v, h₁, rfl ⟩ := liftResolution_elim hp;
+    unfold completenessWitness at *;
+    simp +zetaDelta at *;
+    convert h₁.choose_spec using 1;
+    refine' congr_arg _ ( Finset.ext fun f => _ );
+    simp +decide ;
+    constructor;
+    · rintro ⟨ a, b, hb, x, hx, hx' ⟩;
+      have := hfn.featuredN_injective hx';
+      grind;
+    · exact fun hf => ⟨ n, _, h₁.choose_spec, f, hf, rfl ⟩;
+  · convert mem_liftResolution' _;
+    · ext f; simp [completenessWitness];
+      constructor;
+      · exact fun hf => ⟨ p.1.1, p.2, hp, f, hf, rfl ⟩;
+      · rintro ⟨ a, b, hb, x, hx, h ⟩;
+        have := hfn.featuredN_injective h;
+        grind;
+    · exact Finset.mem_union_left _ ( Finset.mem_image_of_mem _ hp )
 
 theorem liftResolution_completeness
     (R_f : Real N V) (support : Support N V F)
