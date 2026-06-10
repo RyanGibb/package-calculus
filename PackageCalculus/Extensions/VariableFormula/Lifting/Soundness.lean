@@ -25,15 +25,7 @@ theorem liftResolution_soundness
       (Set.InjOn.mono (Set.subset_univ _)
         (Function.Injective.injOn (embedPkgFn_injective (X := X) (Y := Y)))) by
     rw [heq]; exact hsound
-  ext p; simp only [liftResolution, Finset.mem_filterMap, Finset.mem_preimage]
-  constructor
-  · rintro ⟨p', hp', hinv⟩
-    have heq := tryInvPkg_some hinv
-    rw [embedPkgFn_eq_embedPkg] at heq; rwa [heq]
-  · intro hp
-    exact ⟨embedPkg (X := X) (Y := Y) p, hp, by
-      show p ∈ tryInvPkg (embedPkgFn (X := X) (Y := Y) p)
-      rw [tryInvPkg_embed]; rfl⟩
+  ext p; simp [← embedPkgFn_eq_embedPkg, mem_liftResolution, Finset.mem_preimage]
 
 
 end PackageCalculus.VarFormula

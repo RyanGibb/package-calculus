@@ -68,12 +68,7 @@ def selectLiteral (σ : Var → Bool) (c : ThreeClause Var) : Literal Var :=
 omit [DecidableEq Cls] in
 private theorem selectLiteral_mem (σ : Var → Bool) (c : ThreeClause Var) :
     selectLiteral σ c ∈ ({c.l₁, c.l₂, c.l₃} : Finset (Literal Var)) := by
-  unfold selectLiteral
-  simp only [Finset.mem_insert, Finset.mem_singleton]
-  split_ifs
-  · left; rfl
-  · right; left; rfl
-  · right; right; rfl
+  unfold selectLiteral; split_ifs <;> simp
 
 omit [DecidableEq Var] [DecidableEq Cls] in
 private theorem selectLiteral_eval {σ : Var → Bool} {c : ThreeClause Var}

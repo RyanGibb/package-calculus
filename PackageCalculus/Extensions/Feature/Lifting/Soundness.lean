@@ -24,12 +24,9 @@ theorem liftResolution_soundness
   ext ⟨n, v⟩
   simp only [Finset.mem_filterMap, Finset.mem_preimage, embedPkg]
   constructor
-  · rintro ⟨p', hp', hinv⟩
-    have heq := tryInvPkg_some hinv
-    simp only [embedPkg] at heq
-    exact heq ▸ hp'
-  · intro hp
-    exact ⟨(hfn.origN n, v), hp, by simp [tryInvPkg, hfn.tryOrigN_origN]⟩
+  · rintro ⟨_, hp', hinv⟩
+    have := tryInvPkg_some hinv; simp only [embedPkg] at this; exact this ▸ hp'
+  · exact fun hp => ⟨_, hp, by simp [tryInvPkg, hfn.tryOrigN_origN]⟩
 
 
 end PackageCalculus.Feature

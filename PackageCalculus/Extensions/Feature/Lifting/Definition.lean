@@ -17,18 +17,6 @@ def tryInvPkg (p : Package N' V) : Option (Package N V) :=
 attribute [local simp] HasFeatureNames.tryOrigN_origN
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq F] [Fintype F] [DecidableEq N'] in
-private theorem tryInvPkg_inj :
-    ∀ a a' (b : Package N V), b ∈ tryInvPkg (hfn := hfn) a → b ∈ tryInvPkg (hfn := hfn) a' → a = a' := by
-  intro a a' ⟨n, v⟩ h1 h2
-  simp only [tryInvPkg, Option.mem_def] at h1 h2
-  revert h1 h2
-  cases hn1 : hfn.tryOrigN a.1 <;> simp (config := { decide := false })
-  intro rfl rfl
-  cases hn2 : hfn.tryOrigN a'.1 <;> simp (config := { decide := false })
-  intro rfl heq
-  exact Prod.ext ((hfn.tryOrigN_some _ _ hn1).symm.trans (hfn.tryOrigN_some _ _ hn2)) heq.symm
-
-omit [DecidableEq N] [DecidableEq V] [DecidableEq F] [Fintype F] [DecidableEq N'] in
 private theorem tryInvPkg_embed (p : Package N V) :
     tryInvPkg (hfn := hfn) (embedPkg F p) = some p := by
   simp [tryInvPkg, embedPkg, hfn.tryOrigN_origN]
@@ -46,6 +34,12 @@ theorem tryInvPkg_some {p' : Package N' V} {p : Package N V}
     show (hfn.origN n₀, v') = (n', v')
     rw [hfn.tryOrigN_some _ _ htn]
   | none => simp at h
+
+omit [DecidableEq N] [DecidableEq V] [DecidableEq F] [Fintype F] [DecidableEq N'] in
+private theorem tryInvPkg_inj :
+    ∀ a a' (b : Package N V), b ∈ tryInvPkg (hfn := hfn) a → b ∈ tryInvPkg (hfn := hfn) a' → a = a' := by
+  intro a a' b ha ha'
+  exact (tryInvPkg_some ha).symm.trans (tryInvPkg_some ha')
 
 /-! ## Lift functions -/
 

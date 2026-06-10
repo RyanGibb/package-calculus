@@ -31,20 +31,6 @@ private def tryInvPkg (p : Package N' V') : Option (Package N V) :=
   | _, _ => none
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem tryInvPkg_inj :
-    ∀ a a' (b : Package N V), b ∈ tryInvPkg a → b ∈ tryInvPkg a' → a = a' := by
-  intro a a' ⟨n, v⟩ h1 h2
-  simp only [tryInvPkg, Option.mem_def] at h1 h2
-  revert h1 h2
-  cases hn1 : hcn.tryOrigN a.1 <;> cases hv1 : hcv.tryOrigV a.2 <;> simp (config := { decide := false })
-  intro rfl rfl
-  cases hn2 : hcn.tryOrigN a'.1 <;> cases hv2 : hcv.tryOrigV a'.2 <;> simp (config := { decide := false })
-  intro rfl rfl
-  exact Prod.ext
-    ((hcn.tryOrigN_some _ _ hn1).symm.trans (hcn.tryOrigN_some _ _ hn2))
-    ((hcv.tryOrigV_some _ _ hv1).symm.trans (hcv.tryOrigV_some _ _ hv2))
-
-omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
 private theorem tryInvPkg_embed (p : Package N V) :
     tryInvPkg (embedPkgFn p) = some p := by
   simp [tryInvPkg, embedPkgFn, hcn.tryOrigN_origN, hcv.tryOrigV_origV]
@@ -64,6 +50,12 @@ private theorem tryInvPkg_some {p' : Package N' V'} {p : Package N V}
     rw [hcn.tryOrigN_some _ _ htn, hcv.tryOrigV_some _ _ htv]
   | some _, none => simp at h
   | none, _ => simp at h
+
+omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
+private theorem tryInvPkg_inj :
+    ∀ a a' (b : Package N V), b ∈ tryInvPkg a → b ∈ tryInvPkg a' → a = a' := by
+  intro a a' b ha ha'
+  exact (tryInvPkg_some ha).symm.trans (tryInvPkg_some ha')
 
 /-- The injectivity side-condition for `filterMap`ing `tryOrigV`. -/
 private theorem tryOrigV_filterMap_inj :
@@ -190,30 +182,18 @@ def conflictLift (R' : Real N' V') (Δ' : DepRel N' V') :
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
 theorem mem_liftReal {R' : Real N' V'} {p : Package N V} :
     p ∈ liftReal R' ↔ embedPkg p ∈ R' := by
-  simp only [liftReal, Finset.mem_filterMap]
+  simp only [liftReal, Finset.mem_filterMap, ← embedPkgFn_eq_embedPkg]
   constructor
-  · rintro ⟨p', hp', hinv⟩
-    have heq := tryInvPkg_some hinv
-    rw [embedPkgFn_eq_embedPkg] at heq
-    rwa [heq]
-  · intro hp
-    exact ⟨embedPkg p, hp, by
-      show p ∈ tryInvPkg (embedPkgFn p)
-      rw [tryInvPkg_embed]; exact rfl⟩
+  · rintro ⟨_, hp', hinv⟩; exact tryInvPkg_some hinv ▸ hp'
+  · exact fun hp => ⟨_, hp, tryInvPkg_embed p⟩
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
 theorem mem_liftResolution {S' : Finset (Package N' V')} {p : Package N V} :
     p ∈ liftResolution S' ↔ embedPkg p ∈ S' := by
-  simp only [liftResolution, Finset.mem_filterMap]
+  simp only [liftResolution, Finset.mem_filterMap, ← embedPkgFn_eq_embedPkg]
   constructor
-  · rintro ⟨p', hp', hinv⟩
-    have heq := tryInvPkg_some hinv
-    rw [embedPkgFn_eq_embedPkg] at heq
-    rwa [heq]
-  · intro hp
-    exact ⟨embedPkg p, hp, by
-      show p ∈ tryInvPkg (embedPkgFn p)
-      rw [tryInvPkg_embed]; exact rfl⟩
+  · rintro ⟨_, hp', hinv⟩; exact tryInvPkg_some hinv ▸ hp'
+  · exact fun hp => ⟨_, hp, tryInvPkg_embed p⟩
 
 theorem mem_liftDeps {Δ' : DepRel N' V'} {d : Package N V × N × Finset V} :
     d ∈ liftDeps Δ' ↔ embedDepFn d ∈ Δ' := by

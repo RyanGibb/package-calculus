@@ -72,19 +72,17 @@ theorem mem_liftReal {g : V → G} {R' : Real N' V'} {p : Package N V} :
     p ∈ liftReal g R' ↔ embedPkg g p ∈ R' := by
   simp only [liftReal, Finset.mem_filterMap]
   constructor
-  · rintro ⟨p', hp', hinv⟩
-    have := tryInvPkg_some g (Option.mem_def.mpr hinv)
-    rwa [this]
-  · intro hp; exact ⟨embedPkg g p, hp, Option.mem_def.mpr (tryInvPkg_embed g p)⟩
+  · rintro ⟨_, hp', hinv⟩
+    exact (tryInvPkg_some g (Option.mem_def.mpr hinv)) ▸ hp'
+  · exact fun hp => ⟨_, hp, Option.mem_def.mpr (tryInvPkg_embed g p)⟩
 
 theorem mem_liftResolution {g : V → G} {S' : Finset (Package N' V')} {p : Package N V} :
     p ∈ liftResolution g S' ↔ embedPkg g p ∈ S' := by
   simp only [liftResolution, Finset.mem_filterMap]
   constructor
-  · rintro ⟨p', hp', hinv⟩
-    have := tryInvPkg_some g (Option.mem_def.mpr hinv)
-    rwa [this]
-  · intro hp; exact ⟨embedPkg g p, hp, Option.mem_def.mpr (tryInvPkg_embed g p)⟩
+  · rintro ⟨_, hp', hinv⟩
+    exact (tryInvPkg_some g (Option.mem_def.mpr hinv)) ▸ hp'
+  · exact fun hp => ⟨_, hp, Option.mem_def.mpr (tryInvPkg_embed g p)⟩
 
 
 end PackageCalculus.Concurrent

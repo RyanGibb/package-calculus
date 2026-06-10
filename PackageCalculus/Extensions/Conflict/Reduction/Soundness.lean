@@ -27,20 +27,6 @@ private def tryInvPkg (p : Package N' V') : Option (Package N V) :=
   | _, _ => none
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem tryInvPkg_inj :
-    ∀ a a' (b : Package N V), b ∈ tryInvPkg a → b ∈ tryInvPkg a' → a = a' := by
-  intro a a' ⟨n, v⟩ h1 h2
-  simp only [tryInvPkg, Option.mem_def] at h1 h2
-  revert h1 h2
-  cases hn1 : hcn.tryOrigN a.1 <;> cases hv1 : hcv.tryOrigV a.2 <;> simp (config := { decide := false })
-  intro rfl rfl
-  cases hn2 : hcn.tryOrigN a'.1 <;> cases hv2 : hcv.tryOrigV a'.2 <;> simp (config := { decide := false })
-  intro rfl rfl
-  exact Prod.ext
-    ((hcn.tryOrigN_some _ _ hn1).symm.trans (hcn.tryOrigN_some _ _ hn2))
-    ((hcv.tryOrigV_some _ _ hv1).symm.trans (hcv.tryOrigV_some _ _ hv2))
-
-omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
 private theorem tryInvPkg_embed (p : Package N V) :
     tryInvPkg (embedPkg p) = some p := by
   simp [tryInvPkg, embedPkg, hcn.tryOrigN_origN, hcv.tryOrigV_origV]
@@ -61,6 +47,12 @@ private theorem tryInvPkg_some {p' : Package N' V'} {p : Package N V}
   | some _, none => simp at h
   | none, _ => simp at h
 
+omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
+private theorem tryInvPkg_inj :
+    ∀ a a' (b : Package N V), b ∈ tryInvPkg a → b ∈ tryInvPkg a' → a = a' := by
+  intro a a' b ha ha'
+  exact (tryInvPkg_some ha).symm.trans (tryInvPkg_some ha')
+
 private def preimageS (S : Finset (Package N' V')) : Finset (Package N V) :=
   S.filterMap tryInvPkg tryInvPkg_inj
 
@@ -78,14 +70,10 @@ omit [DecidableEq N] [DecidableEq V] in
 private theorem embedPkg_mem_real {p : Package N V} {R_Γ : Real N V} {Γ : ConflictRel N V}
     (h : embedPkg p ∈ conflictReal R_Γ Γ) : p ∈ R_Γ := by
   simp only [conflictReal, embedSet, Finset.mem_union, Finset.mem_image, Finset.mem_biUnion] at h
-  rcases h with ⟨q, hqR, hqeq⟩ | ⟨a, haΓ, hmem⟩
+  rcases h with ⟨q, hqR, hqeq⟩ | ⟨a, _, hmem⟩
   · simp only [embedPkg, Prod.mk.injEq] at hqeq
-    obtain ⟨h1, h2⟩ := hqeq
-    have h1' := hcn.origN.injective h1; have h2' := hcv.origV.injective h2
-    have : q = p := Prod.ext h1' h2'
-    subst this; exact hqR
-  · -- embedPkg p is in the synthetic biUnion: contradiction
-    simp only [Finset.mem_insert, Finset.mem_singleton, embedPkg, Prod.mk.injEq] at hmem
+    exact (Prod.ext (hcn.origN.injective hqeq.1) (hcv.origV.injective hqeq.2)) ▸ hqR
+  · simp only [Finset.mem_insert, Finset.mem_singleton, embedPkg, Prod.mk.injEq] at hmem
     rcases hmem with ⟨h1, _⟩ | ⟨h1, _⟩ <;> exact absurd h1 (hcn.origN_ne_syntheticN _ _ _)
 
 omit [DecidableEq N] [DecidableEq V] in

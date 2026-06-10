@@ -26,8 +26,7 @@ def Literal.eval (σ : Var → Bool) (l : Literal Var) : Bool :=
 
 theorem Literal.eval_true_iff {σ : Var → Bool} {l : Literal Var} :
     l.eval σ = true ↔ σ l.var = l.pos := by
-  unfold Literal.eval
-  cases l.pos <;> simp
+  unfold Literal.eval; cases l.pos <;> simp
 
 def ThreeClause.satisfiedBy (σ : Var → Bool) (c : ThreeClause Var) : Prop :=
   c.l₁.eval σ = true ∨ c.l₂.eval σ = true ∨ c.l₃.eval σ = true
