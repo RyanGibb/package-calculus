@@ -28,6 +28,28 @@ variable [hcfi : HasConcurrentFeatureIntermediate N V F G N_FC]
 
 set_option linter.unusedSectionVars false
 
+/-- Close any goal from an impossible equality between distinct synthetic-name
+families (granular orig/featured, shared and secondary intermediates). -/
+local macro "cf_name_clash " h:term : tactic =>
+  `(tactic| first
+      | (cases (hcnm.granularN_injective $h).1; done)
+      | exact absurd $h (hcfi.cfIntermediateN_ne_granularN _ _ _ _ _)
+      | exact absurd ($h).symm (hcfi.cfIntermediateN_ne_granularN _ _ _ _ _)
+      | exact absurd $h (hcfi.cfIntermediateN_f_ne_granularN _ _ _ _ _ _)
+      | exact absurd ($h).symm (hcfi.cfIntermediateN_f_ne_granularN _ _ _ _ _ _)
+      | exact absurd $h (hcfi.cfIntermediateN_a_ne_granularN _ _ _ _ _ _ _)
+      | exact absurd ($h).symm (hcfi.cfIntermediateN_a_ne_granularN _ _ _ _ _ _ _)
+      | exact absurd $h (hcfi.cfIntermediateN_f_ne_cfIntermediateN _ _ _ _ _ _ _)
+      | exact absurd ($h).symm (hcfi.cfIntermediateN_f_ne_cfIntermediateN _ _ _ _ _ _ _)
+      | exact absurd $h (hcfi.cfIntermediateN_a_ne_cfIntermediateN _ _ _ _ _ _ _ _)
+      | exact absurd ($h).symm (hcfi.cfIntermediateN_a_ne_cfIntermediateN _ _ _ _ _ _ _ _)
+      | exact absurd $h (hcfi.cfIntermediateN_a_ne_cfIntermediateN_f _ _ _ _ _ _ _ _ _)
+      | exact absurd ($h).symm (hcfi.cfIntermediateN_a_ne_cfIntermediateN_f _ _ _ _ _ _ _ _ _))
+
+/-- Dismiss a witness case whose package equality is impossible by name family. -/
+local macro "cf_clash " h:ident : tactic =>
+  `(tactic| (simp only [Prod.mk.injEq] at $h:ident; cf_name_clash ($h).1))
+
 /-- Completeness witness: builds the FC-level `S` from `(S_CF, π, Δ_f, Δ_a)`.
 
     * Each `((n, v), fs) ∈ S_CF` contributes its base orig granular package and its feature
@@ -146,10 +168,7 @@ theorem cfCompletenessWitness_base_mem
     (h : ((n, v), fs) ∈ S_CF) :
     (hcnm.granularN (Feature.FeatureName.orig n) (g v), hcvr.origV v) ∈
       cfCompletenessWitness (N_FC := N_FC) (V_FC := V_FC) S_CF π Δ_f Δ_a g := by
-  apply Finset.mem_union_left; apply Finset.mem_union_left
-  apply Finset.mem_union_left; apply Finset.mem_union_left
-  apply Finset.mem_union_left
-  exact Finset.mem_image.mpr ⟨⟨(n, v), fs⟩, h, rfl⟩
+  mem_unions Finset.mem_image.mpr ⟨⟨(n, v), fs⟩, h, rfl⟩
 
 theorem cfCompletenessWitness_feat_mem
     {S_CF : Finset (Package N V × Finset F)}
@@ -159,10 +178,7 @@ theorem cfCompletenessWitness_feat_mem
     (h : ((n, v), fs) ∈ S_CF) (hf : f ∈ fs) :
     (hcnm.granularN (Feature.FeatureName.featured n f) (g v), hcvr.origV v) ∈
       cfCompletenessWitness (N_FC := N_FC) (V_FC := V_FC) S_CF π Δ_f Δ_a g := by
-  apply Finset.mem_union_left; apply Finset.mem_union_left
-  apply Finset.mem_union_left; apply Finset.mem_union_left
-  apply Finset.mem_union_right
-  exact Finset.mem_biUnion.mpr ⟨⟨(n, v), fs⟩, h, Finset.mem_image.mpr ⟨f, hf, rfl⟩⟩
+  mem_unions Finset.mem_biUnion.mpr ⟨⟨(n, v), fs⟩, h, Finset.mem_image.mpr ⟨f, hf, rfl⟩⟩
 
 theorem cfCompletenessWitness_inter_mem_f
     {S_CF : Finset (Package N V × Finset F)}
@@ -174,10 +190,7 @@ theorem cfCompletenessWitness_inter_mem_f
     (hscf : ∃ fs', fs ⊆ fs' ∧ ((n, v), fs') ∈ S_CF) (hπ : ((n, v), (p_n, p_v)) ∈ π) :
     (hcfi.cfIntermediateN p_n p_v n, hcvr.origV v) ∈
       cfCompletenessWitness (N_FC := N_FC) (V_FC := V_FC) S_CF π Δ_f Δ_a g := by
-  apply Finset.mem_union_left; apply Finset.mem_union_left
-  apply Finset.mem_union_left
-  apply Finset.mem_union_right
-  exact Finset.mem_biUnion.mpr ⟨⟨(p_n, p_v), n, vs, fs⟩, hdep,
+  mem_unions Finset.mem_biUnion.mpr ⟨⟨(p_n, p_v), n, vs, fs⟩, hdep,
     Finset.mem_image.mpr ⟨v, Finset.mem_filter.mpr ⟨hv, hp_S, hscf, hπ⟩, rfl⟩⟩
 
 theorem cfCompletenessWitness_inter_mem_a
@@ -190,9 +203,7 @@ theorem cfCompletenessWitness_inter_mem_a
     (hscf : ∃ fs', fs ⊆ fs' ∧ ((n, v), fs') ∈ S_CF) (hπ : ((n, v), (p_n, p_v)) ∈ π) :
     (hcfi.cfIntermediateN p_n p_v n, hcvr.origV v) ∈
       cfCompletenessWitness (N_FC := N_FC) (V_FC := V_FC) S_CF π Δ_f Δ_a g := by
-  apply Finset.mem_union_left; apply Finset.mem_union_left
-  apply Finset.mem_union_right
-  exact Finset.mem_biUnion.mpr ⟨⟨((p_n, p_v), f_dep), n, vs, fs⟩, hdep,
+  mem_unions Finset.mem_biUnion.mpr ⟨⟨((p_n, p_v), f_dep), n, vs, fs⟩, hdep,
     Finset.mem_image.mpr ⟨v, Finset.mem_filter.mpr ⟨hv, hp_S, hscf, hπ⟩, rfl⟩⟩
 
 theorem cfCompletenessWitness_inter_mem_f_feat
@@ -206,9 +217,7 @@ theorem cfCompletenessWitness_inter_mem_f_feat
     (hscf : ∃ fs', fs ⊆ fs' ∧ ((n, v), fs') ∈ S_CF) (hπ : ((n, v), (p_n, p_v)) ∈ π) :
     (hcfi.cfIntermediateN_f p_n p_v n f, hcvr.origV v) ∈
       cfCompletenessWitness (N_FC := N_FC) (V_FC := V_FC) S_CF π Δ_f Δ_a g := by
-  apply Finset.mem_union_left
-  apply Finset.mem_union_right
-  exact Finset.mem_biUnion.mpr ⟨⟨(p_n, p_v), n, vs, fs⟩, hdep,
+  mem_unions Finset.mem_biUnion.mpr ⟨⟨(p_n, p_v), n, vs, fs⟩, hdep,
     Finset.mem_biUnion.mpr ⟨f, hf,
       Finset.mem_image.mpr ⟨v, Finset.mem_filter.mpr ⟨hv, hp_S, hscf, hπ⟩, rfl⟩⟩⟩
 
@@ -223,8 +232,7 @@ theorem cfCompletenessWitness_inter_mem_a_feat
     (hscf : ∃ fs', fs ⊆ fs' ∧ ((n, v), fs') ∈ S_CF) (hπ : ((n, v), (p_n, p_v)) ∈ π) :
     (hcfi.cfIntermediateN_a p_n p_v f_dep n f', hcvr.origV v) ∈
       cfCompletenessWitness (N_FC := N_FC) (V_FC := V_FC) S_CF π Δ_f Δ_a g := by
-  apply Finset.mem_union_right
-  exact Finset.mem_biUnion.mpr ⟨⟨((p_n, p_v), f_dep), n, vs, fs⟩, hdep,
+  mem_unions Finset.mem_biUnion.mpr ⟨⟨((p_n, p_v), f_dep), n, vs, fs⟩, hdep,
     Finset.mem_biUnion.mpr ⟨f', hf',
       Finset.mem_image.mpr ⟨v, Finset.mem_filter.mpr ⟨hv, hp_S, hscf, hπ⟩, rfl⟩⟩⟩
 
@@ -267,10 +275,7 @@ theorem cfComplete_subset :
       exact Finset.mem_biUnion.mpr ⟨((n, v), f), h_support, by
         simp only [if_pos h_R, Finset.mem_singleton]
         rfl⟩
-    apply Finset.mem_union_left; apply Finset.mem_union_left
-    apply Finset.mem_union_left; apply Finset.mem_union_left
-    -- embedReal: (granularN (featured n f) (g v), origV v) is image of (featured n f, v).
-    exact Finset.mem_image.mpr ⟨(Feature.FeatureName.featured n f, v), h_feat, rfl⟩
+    mem_unions Finset.mem_image.mpr ⟨(Feature.FeatureName.featured n f, v), h_feat, rfl⟩
   · -- Part 3: shared intermediate from Δ_f
     exact mem_cfReal_inter_f hdep hv
   · -- Part 3b: shared intermediate from Δ_a
@@ -320,10 +325,7 @@ private theorem cfComplete_dep_closure_aux
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
-    · exfalso
-      simp only [Prod.mk.injEq] at hp_eq
-      have hinj := hcnm.granularN_injective hp_eq.1
-      cases hinj.1
+    · cf_clash hp_eq
     · simp only [Prod.mk.injEq] at hp_eq
       obtain ⟨hgran, hver⟩ := hp_eq
       obtain ⟨hfn_eq, _⟩ := hcnm.granularN_injective hgran
@@ -333,13 +335,7 @@ private theorem cfComplete_dep_closure_aux
       · exact Finset.mem_map.mpr ⟨v, Finset.mem_singleton.mpr rfl, rfl⟩
       · have hS'' : ((n, v), fs') ∈ S_CF := by rw [hpair.1, hv_eq]; exact hS'
         exact cfCompletenessWitness_base_mem hS''
-    all_goals
-    · exfalso
-      simp only [Prod.mk.injEq] at hp_eq
-      first
-        | exact (hcfi.cfIntermediateN_ne_granularN _ _ _ _ _) hp_eq.1.symm
-        | exact (hcfi.cfIntermediateN_f_ne_granularN _ _ _ _ _ _) hp_eq.1.symm
-        | exact (hcfi.cfIntermediateN_a_ne_granularN _ _ _ _ _ _ _) hp_eq.1.symm
+    all_goals cf_clash hp_eq
   -- f_depToInter: p = depender's orig granular, m = shared intermediate.
   · subst hp_eq; subst hm_eq; subst hvs_eq
     rcases cfCompletenessWitness_mem_cases hp with
@@ -360,17 +356,8 @@ private theorem cfComplete_dep_closure_aux
       refine ⟨hcvr.origV u, ?_, ?_⟩
       · exact Finset.mem_map.mpr ⟨u, hu_vs, rfl⟩
       · exact cfCompletenessWitness_inter_mem_f hdep_f hu_vs ⟨fs', hS''⟩ hu_scf hu_π
-    · exfalso
-      simp only [Prod.mk.injEq] at hp_eq
-      have hinj := hcnm.granularN_injective hp_eq.1
-      cases hinj.1
-    all_goals
-    · exfalso
-      simp only [Prod.mk.injEq] at hp_eq
-      first
-        | exact (hcfi.cfIntermediateN_ne_granularN _ _ _ _ _) hp_eq.1.symm
-        | exact (hcfi.cfIntermediateN_f_ne_granularN _ _ _ _ _ _) hp_eq.1.symm
-        | exact (hcfi.cfIntermediateN_a_ne_granularN _ _ _ _ _ _ _) hp_eq.1.symm
+    · cf_clash hp_eq
+    all_goals cf_clash hp_eq
   -- f_interToOrig: p = shared intermediate, m = orig granular.
   · subst hp_eq; subst hm_eq; subst hvs_eq
     rcases cfCompletenessWitness_mem_cases hp with
@@ -381,11 +368,7 @@ private theorem cfComplete_dep_closure_aux
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
     all_goals first
-      | (exfalso; simp only [Prod.mk.injEq] at hp_eq
-         first
-           | exact (hcfi.cfIntermediateN_ne_granularN _ _ _ _ _) hp_eq.1
-           | exact (hcfi.cfIntermediateN_f_ne_cfIntermediateN _ _ _ _ _ _ _) hp_eq.1.symm
-           | exact (hcfi.cfIntermediateN_a_ne_cfIntermediateN _ _ _ _ _ _ _ _) hp_eq.1.symm)
+      | cf_clash hp_eq
       | (simp only [Prod.mk.injEq] at hp_eq
          obtain ⟨hci, hver⟩ := hp_eq
          have hinj := hcfi.cfIntermediateN_injective _ _ _ _ _ _ hci
@@ -416,17 +399,8 @@ private theorem cfComplete_dep_closure_aux
       · exact Finset.mem_map.mpr ⟨u, hu_vs, rfl⟩
       · exact cfCompletenessWitness_inter_mem_f_feat hdep_f hu_vs hf_fs
           ⟨fs', hS''⟩ hu_scf hu_π
-    · exfalso
-      simp only [Prod.mk.injEq] at hp_eq
-      have hinj := hcnm.granularN_injective hp_eq.1
-      cases hinj.1
-    all_goals
-    · exfalso
-      simp only [Prod.mk.injEq] at hp_eq
-      first
-        | exact (hcfi.cfIntermediateN_ne_granularN _ _ _ _ _) hp_eq.1.symm
-        | exact (hcfi.cfIntermediateN_f_ne_granularN _ _ _ _ _ _) hp_eq.1.symm
-        | exact (hcfi.cfIntermediateN_a_ne_granularN _ _ _ _ _ _ _) hp_eq.1.symm
+    · cf_clash hp_eq
+    all_goals cf_clash hp_eq
   -- f_interToFeat: p = secondary cfIntermediateN_f at v, m = feature granular at g v.
   · subst hp_eq; subst hm_eq; subst hvs_eq
     rcases cfCompletenessWitness_mem_cases hp with
@@ -437,11 +411,7 @@ private theorem cfComplete_dep_closure_aux
       | ⟨p_n', p_v', n', vs_w, fs_w, v', f_w, hdep_w, hv_w_vs, hf_w, hp_S, hscf', hπ', hp_eq⟩
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
     all_goals first
-      | (exfalso; simp only [Prod.mk.injEq] at hp_eq
-         first
-           | exact (hcfi.cfIntermediateN_f_ne_granularN _ _ _ _ _ _) hp_eq.1
-           | exact (hcfi.cfIntermediateN_f_ne_cfIntermediateN _ _ _ _ _ _ _) hp_eq.1
-           | exact (hcfi.cfIntermediateN_a_ne_cfIntermediateN_f _ _ _ _ _ _ _ _ _) hp_eq.1.symm)
+      | cf_clash hp_eq
       | (-- Witness intermediate_f_feat. Match args.
          simp only [Prod.mk.injEq] at hp_eq
          obtain ⟨hci, hver⟩ := hp_eq
@@ -466,11 +436,7 @@ private theorem cfComplete_dep_closure_aux
       | ⟨p_n', p_v', n', vs_w, fs_w, v', f_w, hdep_w, hv_w_vs, hf_w, hp_S, hscf', hπ', hp_eq⟩
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
     all_goals first
-      | (exfalso; simp only [Prod.mk.injEq] at hp_eq
-         first
-           | exact (hcfi.cfIntermediateN_f_ne_granularN _ _ _ _ _ _) hp_eq.1
-           | exact (hcfi.cfIntermediateN_f_ne_cfIntermediateN _ _ _ _ _ _ _) hp_eq.1
-           | exact (hcfi.cfIntermediateN_a_ne_cfIntermediateN_f _ _ _ _ _ _ _ _ _) hp_eq.1.symm)
+      | cf_clash hp_eq
       | (-- Witness case 5: secondary cfIntermediateN_f at v' from entry (vs_w, fs_w).
          -- Place the shared cfIntermediateN at u in Part 3 using the SAME entry (vs_w, fs_w);
          -- the Part 3 filter conditions are identical to the Part 4 filter conditions.
@@ -494,10 +460,7 @@ private theorem cfComplete_dep_closure_aux
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
-    · exfalso
-      simp only [Prod.mk.injEq] at hp_eq
-      have hinj := hcnm.granularN_injective hp_eq.1
-      cases hinj.1
+    · cf_clash hp_eq
     · simp only [Prod.mk.injEq] at hp_eq
       obtain ⟨hgran, hver⟩ := hp_eq
       obtain ⟨hfn_eq, _⟩ := hcnm.granularN_injective hgran
@@ -510,13 +473,7 @@ private theorem cfComplete_dep_closure_aux
       refine ⟨hcvr.origV u, ?_, ?_⟩
       · exact Finset.mem_map.mpr ⟨u, hu_vs, rfl⟩
       · exact cfCompletenessWitness_inter_mem_a hdep_a hu_vs ⟨fs', hS''⟩ hu_scf hu_π
-    all_goals
-    · exfalso
-      simp only [Prod.mk.injEq] at hp_eq
-      first
-        | exact (hcfi.cfIntermediateN_ne_granularN _ _ _ _ _) hp_eq.1.symm
-        | exact (hcfi.cfIntermediateN_f_ne_granularN _ _ _ _ _ _) hp_eq.1.symm
-        | exact (hcfi.cfIntermediateN_a_ne_granularN _ _ _ _ _ _ _) hp_eq.1.symm
+    all_goals cf_clash hp_eq
   -- a_interToOrig: p = shared intermediate, m = orig granular.
   · subst hp_eq; subst hm_eq; subst hvs_eq
     rcases cfCompletenessWitness_mem_cases hp with
@@ -527,11 +484,7 @@ private theorem cfComplete_dep_closure_aux
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
     all_goals first
-      | (exfalso; simp only [Prod.mk.injEq] at hp_eq
-         first
-           | exact (hcfi.cfIntermediateN_ne_granularN _ _ _ _ _) hp_eq.1
-           | exact (hcfi.cfIntermediateN_f_ne_cfIntermediateN _ _ _ _ _ _ _) hp_eq.1.symm
-           | exact (hcfi.cfIntermediateN_a_ne_cfIntermediateN _ _ _ _ _ _ _ _) hp_eq.1.symm)
+      | cf_clash hp_eq
       | (simp only [Prod.mk.injEq] at hp_eq
          obtain ⟨hci, hver⟩ := hp_eq
          have hinj := hcfi.cfIntermediateN_injective _ _ _ _ _ _ hci
@@ -550,10 +503,7 @@ private theorem cfComplete_dep_closure_aux
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
-    · exfalso
-      simp only [Prod.mk.injEq] at hp_eq
-      have hinj := hcnm.granularN_injective hp_eq.1
-      cases hinj.1
+    · cf_clash hp_eq
     · simp only [Prod.mk.injEq] at hp_eq
       obtain ⟨hgran, hver⟩ := hp_eq
       obtain ⟨hfn_eq, _⟩ := hcnm.granularN_injective hgran
@@ -567,13 +517,7 @@ private theorem cfComplete_dep_closure_aux
       · exact Finset.mem_map.mpr ⟨u, hu_vs, rfl⟩
       · exact cfCompletenessWitness_inter_mem_a_feat hdep_a hu_vs hf'_fs
           ⟨fs', hS''⟩ hu_scf hu_π
-    all_goals
-    · exfalso
-      simp only [Prod.mk.injEq] at hp_eq
-      first
-        | exact (hcfi.cfIntermediateN_ne_granularN _ _ _ _ _) hp_eq.1.symm
-        | exact (hcfi.cfIntermediateN_f_ne_granularN _ _ _ _ _ _) hp_eq.1.symm
-        | exact (hcfi.cfIntermediateN_a_ne_granularN _ _ _ _ _ _ _) hp_eq.1.symm
+    all_goals cf_clash hp_eq
   -- a_interToFeat: p = secondary cfIntermediateN_a at v, m = feature granular at g v.
   · subst hp_eq; subst hm_eq; subst hvs_eq
     rcases cfCompletenessWitness_mem_cases hp with
@@ -584,11 +528,7 @@ private theorem cfComplete_dep_closure_aux
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
       | ⟨p_n', p_v', f_dep', n', vs_w, fs_w, v', f_w, hdep_w, hv_w_vs, hf_w, hp_S, hscf', hπ', hp_eq⟩
     all_goals first
-      | (exfalso; simp only [Prod.mk.injEq] at hp_eq
-         first
-           | exact (hcfi.cfIntermediateN_a_ne_granularN _ _ _ _ _ _ _) hp_eq.1
-           | exact (hcfi.cfIntermediateN_a_ne_cfIntermediateN _ _ _ _ _ _ _ _) hp_eq.1
-           | exact (hcfi.cfIntermediateN_a_ne_cfIntermediateN_f _ _ _ _ _ _ _ _ _) hp_eq.1)
+      | cf_clash hp_eq
       | (simp only [Prod.mk.injEq] at hp_eq
          obtain ⟨hci, hver⟩ := hp_eq
          have hinj := hcfi.cfIntermediateN_a_injective _ _ _ _ _ _ _ _ _ _ hci
@@ -612,11 +552,7 @@ private theorem cfComplete_dep_closure_aux
       | ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, hp_eq⟩
       | ⟨p_n', p_v', f_dep', n', vs_w, fs_w, v', f_w, hdep_w, hv_w_vs, hf_w, hp_S, hscf', hπ', hp_eq⟩
     all_goals first
-      | (exfalso; simp only [Prod.mk.injEq] at hp_eq
-         first
-           | exact (hcfi.cfIntermediateN_a_ne_granularN _ _ _ _ _ _ _) hp_eq.1
-           | exact (hcfi.cfIntermediateN_a_ne_cfIntermediateN _ _ _ _ _ _ _ _) hp_eq.1
-           | exact (hcfi.cfIntermediateN_a_ne_cfIntermediateN_f _ _ _ _ _ _ _ _ _) hp_eq.1)
+      | cf_clash hp_eq
       | (-- Witness case 6: secondary cfIntermediateN_a at v' from entry (vs_w, fs_w).
          -- Place the shared cfIntermediateN at u in Part 3b using the SAME entry; the Part 3b
          -- filter conditions are identical to the Part 5 filter conditions.
@@ -684,24 +620,7 @@ theorem cfComplete_version_unique :
        exact cfComplete_vu_granular_same (R := R) (Δ_f := Δ_f) (Δ_a := Δ_a)
          (support := support) (g := g) (r := r) (S_CF := S_CF) (π := π) hres
          hS₁ hS₂ hg_eq)
-    | (-- granular_orig × granular_featured or vice versa: name clash
-       have h := h1n.symm.trans h2n
-       have hfn := hcnm.granularN_injective h
-       cases hfn.1)
-    | (have h := h1n.symm.trans h2n
-       first
-         | exact absurd h (by intro hh; exact hcfi.cfIntermediateN_ne_granularN _ _ _ _ _ hh.symm)
-         | exact absurd h (by intro hh; exact hcfi.cfIntermediateN_f_ne_granularN _ _ _ _ _ _ hh.symm)
-         | exact absurd h (by intro hh; exact hcfi.cfIntermediateN_a_ne_granularN _ _ _ _ _ _ _ hh.symm)
-         | exact absurd h (hcfi.cfIntermediateN_ne_granularN _ _ _ _ _)
-         | exact absurd h (hcfi.cfIntermediateN_f_ne_granularN _ _ _ _ _ _)
-         | exact absurd h (hcfi.cfIntermediateN_a_ne_granularN _ _ _ _ _ _ _)
-         | exact absurd h (by intro hh; exact hcfi.cfIntermediateN_f_ne_cfIntermediateN _ _ _ _ _ _ _ hh)
-         | exact absurd h (by intro hh; exact hcfi.cfIntermediateN_f_ne_cfIntermediateN _ _ _ _ _ _ _ hh.symm)
-         | exact absurd h (by intro hh; exact hcfi.cfIntermediateN_a_ne_cfIntermediateN _ _ _ _ _ _ _ _ hh)
-         | exact absurd h (by intro hh; exact hcfi.cfIntermediateN_a_ne_cfIntermediateN _ _ _ _ _ _ _ _ hh.symm)
-         | exact absurd h (hcfi.cfIntermediateN_a_ne_cfIntermediateN_f _ _ _ _ _ _ _ _ _)
-         | exact absurd h (by intro hh; exact hcfi.cfIntermediateN_a_ne_cfIntermediateN_f _ _ _ _ _ _ _ _ _ hh.symm))
+    | cf_name_clash (h1n.symm.trans h2n)
     | (have hinj := hcfi.cfIntermediateN_injective _ _ _ _ _ _ (h1n.symm.trans h2n)
        obtain ⟨hp_n, hp_v, hn⟩ := hinj
        subst hp_n; subst hp_v; subst hn

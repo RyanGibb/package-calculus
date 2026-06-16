@@ -73,161 +73,9 @@ def completenessWitness [DecidableEq N] [DecidableEq V]
 
 /-! ## Equational lemmas (auto-unfolds for `simp`) -/
 
-section UnfoldEqs
-variable [DecidableEq N] [DecidableEq V] (S_Ψ : Finset (Package N V))
-
-@[simp] lemma witnessSetTaken_dep (n : N) (vs : Finset V) :
-    witnessSetTaken S_Ψ (.dep n vs) = (∅ : Finset (Package N' V')) :=
-  witnessSetTaken.eq_1 S_Ψ n vs
-
-@[simp] lemma witnessSetTaken_conj (ψ_L ψ_R : Formula N V) :
-    (witnessSetTaken S_Ψ (.conj ψ_L ψ_R) : Finset (Package N' V')) =
-      witnessSetTaken S_Ψ ψ_L ∪ witnessSetTaken S_Ψ ψ_R :=
-  witnessSetTaken.eq_2 S_Ψ ψ_L ψ_R
-
-@[simp] lemma witnessSetTaken_disj (ψ_L ψ_R : Formula N V) :
-    (witnessSetTaken S_Ψ (.disj ψ_L ψ_R) : Finset (Package N' V')) =
-      if S_Ψ ⊨ ψ_L then
-        {(hpn.disjunctN ψ_L ψ_R, hpv.zeroV)} ∪
-          witnessSetTaken S_Ψ ψ_L ∪ witnessSetUntaken S_Ψ ψ_R
-      else
-        {(hpn.disjunctN ψ_L ψ_R, hpv.oneV)} ∪
-          witnessSetUntaken S_Ψ ψ_L ∪ witnessSetTaken S_Ψ ψ_R :=
-  witnessSetTaken.eq_3 S_Ψ ψ_L ψ_R
-
-@[simp] lemma witnessSetTaken_neg_dep (n : N) (vs : Finset V) :
-    (witnessSetTaken S_Ψ (.neg (.dep n vs)) : Finset (Package N' V')) =
-      {(hpn.syntheticN n vs, hpv.oneV)} :=
-  witnessSetTaken.eq_4 S_Ψ n vs
-
-lemma witnessSetTaken_neg_conj (ψ_L ψ_R : Formula N V) :
-    (witnessSetTaken S_Ψ (.neg (.conj ψ_L ψ_R)) : Finset (Package N' V')) =
-      witnessSetTaken S_Ψ (.disj (.neg ψ_L) (.neg ψ_R)) :=
-  witnessSetTaken.eq_5 S_Ψ ψ_L ψ_R
-
-lemma witnessSetTaken_neg_disj (ψ_L ψ_R : Formula N V) :
-    (witnessSetTaken S_Ψ (.neg (.disj ψ_L ψ_R)) : Finset (Package N' V')) =
-      witnessSetTaken S_Ψ (.conj (.neg ψ_L) (.neg ψ_R)) :=
-  witnessSetTaken.eq_6 S_Ψ ψ_L ψ_R
-
-lemma witnessSetTaken_neg_neg (ψ : Formula N V) :
-    (witnessSetTaken S_Ψ (.neg (.neg ψ)) : Finset (Package N' V')) =
-      witnessSetTaken S_Ψ ψ :=
-  witnessSetTaken.eq_7 S_Ψ ψ
-
-@[simp] lemma witnessSetUntaken_dep (n : N) (vs : Finset V) :
-    witnessSetUntaken S_Ψ (.dep n vs) = (∅ : Finset (Package N' V')) :=
-  witnessSetUntaken.eq_1 S_Ψ n vs
-
-@[simp] lemma witnessSetUntaken_conj (ψ_L ψ_R : Formula N V) :
-    (witnessSetUntaken S_Ψ (.conj ψ_L ψ_R) : Finset (Package N' V')) =
-      witnessSetUntaken S_Ψ ψ_L ∪ witnessSetUntaken S_Ψ ψ_R :=
-  witnessSetUntaken.eq_2 S_Ψ ψ_L ψ_R
-
-@[simp] lemma witnessSetUntaken_disj (ψ_L ψ_R : Formula N V) :
-    (witnessSetUntaken S_Ψ (.disj ψ_L ψ_R) : Finset (Package N' V')) =
-      witnessSetUntaken S_Ψ ψ_L ∪ witnessSetUntaken S_Ψ ψ_R :=
-  witnessSetUntaken.eq_3 S_Ψ ψ_L ψ_R
-
-@[simp] lemma witnessSetUntaken_neg_dep (n : N) (vs : Finset V) :
-    (witnessSetUntaken S_Ψ (.neg (.dep n vs)) : Finset (Package N' V')) =
-      if ∃ u ∈ vs, ((n, u) : Package N V) ∈ S_Ψ
-      then {(hpn.syntheticN n vs, hpv.zeroV)}
-      else ∅ :=
-  witnessSetUntaken.eq_4 S_Ψ n vs
-
-lemma witnessSetUntaken_neg_conj (ψ_L ψ_R : Formula N V) :
-    (witnessSetUntaken S_Ψ (.neg (.conj ψ_L ψ_R)) : Finset (Package N' V')) =
-      witnessSetUntaken S_Ψ (.disj (.neg ψ_L) (.neg ψ_R)) :=
-  witnessSetUntaken.eq_5 S_Ψ ψ_L ψ_R
-
-lemma witnessSetUntaken_neg_disj (ψ_L ψ_R : Formula N V) :
-    (witnessSetUntaken S_Ψ (.neg (.disj ψ_L ψ_R)) : Finset (Package N' V')) =
-      witnessSetUntaken S_Ψ (.conj (.neg ψ_L) (.neg ψ_R)) :=
-  witnessSetUntaken.eq_6 S_Ψ ψ_L ψ_R
-
-lemma witnessSetUntaken_neg_neg (ψ : Formula N V) :
-    (witnessSetUntaken S_Ψ (.neg (.neg ψ)) : Finset (Package N' V')) =
-      witnessSetUntaken S_Ψ ψ :=
-  witnessSetUntaken.eq_7 S_Ψ ψ
-
-end UnfoldEqs
-
-/-! ## No original-name witnesses -/
-
-lemma witnessSetUntaken_not_orig [DecidableEq N] [DecidableEq V]
-    (S_Ψ : Finset (Package N V))
-    (ψ : Formula N V) (n : N) (v : V') :
-    (hpn.origN n, v) ∉ witnessSetUntaken S_Ψ ψ := by
-  match ψ with
-  | .dep _ _ => simp
-  | .conj ψ_L ψ_R =>
-    simp only [witnessSetUntaken_conj, Finset.mem_union, not_or]
-    exact ⟨witnessSetUntaken_not_orig S_Ψ ψ_L n v,
-           witnessSetUntaken_not_orig S_Ψ ψ_R n v⟩
-  | .disj ψ_L ψ_R =>
-    simp only [witnessSetUntaken_disj, Finset.mem_union, not_or]
-    exact ⟨witnessSetUntaken_not_orig S_Ψ ψ_L n v,
-           witnessSetUntaken_not_orig S_Ψ ψ_R n v⟩
-  | .neg (.dep _ _) =>
-    simp only [witnessSetUntaken_neg_dep]
-    split
-    · simp only [Finset.mem_singleton, Prod.mk.injEq, not_and]
-      intro h; exact absurd h (hpn.origN_ne_syntheticN _ _ _)
-    · simp
-  | .neg (.conj ψ_L ψ_R) =>
-    rw [witnessSetUntaken_neg_conj]
-    exact witnessSetUntaken_not_orig S_Ψ (.disj (.neg ψ_L) (.neg ψ_R)) n v
-  | .neg (.disj ψ_L ψ_R) =>
-    rw [witnessSetUntaken_neg_disj]
-    exact witnessSetUntaken_not_orig S_Ψ (.conj (.neg ψ_L) (.neg ψ_R)) n v
-  | .neg (.neg ψ') =>
-    rw [witnessSetUntaken_neg_neg]
-    exact witnessSetUntaken_not_orig S_Ψ ψ' n v
-termination_by ψ.weight
-decreasing_by all_goals simp only [Formula.weight]; omega
-
-lemma witnessSetTaken_not_orig [DecidableEq N] [DecidableEq V]
-    (S_Ψ : Finset (Package N V))
-    (ψ : Formula N V) (n : N) (v : V') :
-    (hpn.origN n, v) ∉ witnessSetTaken S_Ψ ψ := by
-  match ψ with
-  | .dep _ _ => simp
-  | .conj ψ_L ψ_R =>
-    simp only [witnessSetTaken_conj, Finset.mem_union, not_or]
-    exact ⟨witnessSetTaken_not_orig S_Ψ ψ_L n v,
-           witnessSetTaken_not_orig S_Ψ ψ_R n v⟩
-  | .disj ψ_L ψ_R =>
-    simp only [witnessSetTaken_disj]
-    split
-    · simp only [Finset.mem_union, Finset.mem_singleton, not_or]
-      refine ⟨⟨?_, ?_⟩, ?_⟩
-      · intro hsing
-        have := (Prod.mk.injEq _ _ _ _).mp hsing
-        exact absurd this.1 (hpn.origN_ne_disjunctN _ _ _)
-      · exact witnessSetTaken_not_orig S_Ψ ψ_L n v
-      · exact witnessSetUntaken_not_orig S_Ψ ψ_R n v
-    · simp only [Finset.mem_union, Finset.mem_singleton, not_or]
-      refine ⟨⟨?_, ?_⟩, ?_⟩
-      · intro hsing
-        have := (Prod.mk.injEq _ _ _ _).mp hsing
-        exact absurd this.1 (hpn.origN_ne_disjunctN _ _ _)
-      · exact witnessSetUntaken_not_orig S_Ψ ψ_L n v
-      · exact witnessSetTaken_not_orig S_Ψ ψ_R n v
-  | .neg (.dep _ _) =>
-    simp only [witnessSetTaken_neg_dep, Finset.mem_singleton, Prod.mk.injEq, not_and]
-    intro h; exact absurd h (hpn.origN_ne_syntheticN _ _ _)
-  | .neg (.conj ψ_L ψ_R) =>
-    rw [witnessSetTaken_neg_conj]
-    exact witnessSetTaken_not_orig S_Ψ (.disj (.neg ψ_L) (.neg ψ_R)) n v
-  | .neg (.disj ψ_L ψ_R) =>
-    rw [witnessSetTaken_neg_disj]
-    exact witnessSetTaken_not_orig S_Ψ (.conj (.neg ψ_L) (.neg ψ_R)) n v
-  | .neg (.neg ψ') =>
-    rw [witnessSetTaken_neg_neg]
-    exact witnessSetTaken_not_orig S_Ψ ψ' n v
-termination_by ψ.weight
-decreasing_by all_goals simp only [Formula.weight]; omega
+attribute [simp] witnessSetTaken.eq_1 witnessSetTaken.eq_2 witnessSetTaken.eq_3
+  witnessSetTaken.eq_4 witnessSetUntaken.eq_1 witnessSetUntaken.eq_2
+  witnessSetUntaken.eq_3 witnessSetUntaken.eq_4
 
 /-! ## Version determinism (untaken side: always zeroV)
 
@@ -242,29 +90,29 @@ lemma witnessSetUntaken_negDep_det [DecidableEq N] [DecidableEq V]
   match ψ with
   | .dep _ _ => simp at h
   | .conj ψ_L ψ_R =>
-    simp only [witnessSetUntaken_conj, Finset.mem_union] at h
+    simp only [witnessSetUntaken.eq_2, Finset.mem_union] at h
     exact h.elim
       (witnessSetUntaken_negDep_det S_Ψ ψ_L n vs v)
       (witnessSetUntaken_negDep_det S_Ψ ψ_R n vs v)
   | .disj ψ_L ψ_R =>
-    simp only [witnessSetUntaken_disj, Finset.mem_union] at h
+    simp only [witnessSetUntaken.eq_3, Finset.mem_union] at h
     exact h.elim
       (witnessSetUntaken_negDep_det S_Ψ ψ_L n vs v)
       (witnessSetUntaken_negDep_det S_Ψ ψ_R n vs v)
   | .neg (.dep n' vs') =>
-    simp only [witnessSetUntaken_neg_dep] at h
+    simp only [witnessSetUntaken.eq_4] at h
     split at h
     · simp only [Finset.mem_singleton, Prod.mk.injEq] at h
       exact h.2
     · simp at h
   | .neg (.conj ψ_L ψ_R) =>
-    rw [witnessSetUntaken_neg_conj] at h
+    rw [witnessSetUntaken.eq_5] at h
     exact witnessSetUntaken_negDep_det S_Ψ (.disj (.neg ψ_L) (.neg ψ_R)) n vs v h
   | .neg (.disj ψ_L ψ_R) =>
-    rw [witnessSetUntaken_neg_disj] at h
+    rw [witnessSetUntaken.eq_6] at h
     exact witnessSetUntaken_negDep_det S_Ψ (.conj (.neg ψ_L) (.neg ψ_R)) n vs v h
   | .neg (.neg ψ') =>
-    rw [witnessSetUntaken_neg_neg] at h
+    rw [witnessSetUntaken.eq_7] at h
     exact witnessSetUntaken_negDep_det S_Ψ ψ' n vs v h
 termination_by ψ.weight
 decreasing_by all_goals simp only [Formula.weight]; omega
@@ -276,29 +124,29 @@ lemma witnessSetUntaken_disjunct_det [DecidableEq N] [DecidableEq V]
   match ψ with
   | .dep _ _ => simp at h
   | .conj ψ_a ψ_b =>
-    simp only [witnessSetUntaken_conj, Finset.mem_union] at h
+    simp only [witnessSetUntaken.eq_2, Finset.mem_union] at h
     exact h.elim
       (witnessSetUntaken_disjunct_det S_Ψ ψ_a ψ_L ψ_R v)
       (witnessSetUntaken_disjunct_det S_Ψ ψ_b ψ_L ψ_R v)
   | .disj ψ_a ψ_b =>
-    simp only [witnessSetUntaken_disj, Finset.mem_union] at h
+    simp only [witnessSetUntaken.eq_3, Finset.mem_union] at h
     exact h.elim
       (witnessSetUntaken_disjunct_det S_Ψ ψ_a ψ_L ψ_R v)
       (witnessSetUntaken_disjunct_det S_Ψ ψ_b ψ_L ψ_R v)
   | .neg (.dep _ _) =>
-    simp only [witnessSetUntaken_neg_dep] at h
+    simp only [witnessSetUntaken.eq_4] at h
     split at h
     · simp only [Finset.mem_singleton, Prod.mk.injEq] at h
       exact absurd h.1 (hpn.disjunctN_ne_syntheticN _ _ _ _)
     · simp at h
   | .neg (.conj ψ_a ψ_b) =>
-    rw [witnessSetUntaken_neg_conj] at h
+    rw [witnessSetUntaken.eq_5] at h
     exact witnessSetUntaken_disjunct_det S_Ψ (.disj (.neg ψ_a) (.neg ψ_b)) ψ_L ψ_R v h
   | .neg (.disj ψ_a ψ_b) =>
-    rw [witnessSetUntaken_neg_disj] at h
+    rw [witnessSetUntaken.eq_6] at h
     exact witnessSetUntaken_disjunct_det S_Ψ (.conj (.neg ψ_a) (.neg ψ_b)) ψ_L ψ_R v h
   | .neg (.neg ψ') =>
-    rw [witnessSetUntaken_neg_neg] at h
+    rw [witnessSetUntaken.eq_7] at h
     exact witnessSetUntaken_disjunct_det S_Ψ ψ' ψ_L ψ_R v h
 termination_by ψ.weight
 decreasing_by all_goals simp only [Formula.weight]; omega
@@ -317,12 +165,12 @@ lemma witnessSetTaken_disjunct_det [DecidableEq N] [DecidableEq V]
   match ψ with
   | .dep _ _ => simp at h
   | .conj ψ_a ψ_b =>
-    simp only [witnessSetTaken_conj, Finset.mem_union] at h
+    simp only [witnessSetTaken.eq_2, Finset.mem_union] at h
     exact h.elim
       (witnessSetTaken_disjunct_det S_Ψ ψ_a ψ_L ψ_R v)
       (witnessSetTaken_disjunct_det S_Ψ ψ_b ψ_L ψ_R v)
   | .disj ψ_a ψ_b =>
-    simp only [witnessSetTaken_disj] at h
+    simp only [witnessSetTaken.eq_3] at h
     split at h
     · rename_i hψa_sat
       simp only [Finset.mem_union, Finset.mem_singleton] at h
@@ -341,16 +189,16 @@ lemma witnessSetTaken_disjunct_det [DecidableEq N] [DecidableEq V]
       · exact (witnessSetUntaken_disjunct_det S_Ψ ψ_a ψ_L ψ_R v hU).elim
       · exact witnessSetTaken_disjunct_det S_Ψ ψ_b ψ_L ψ_R v hR
   | .neg (.dep _ _) =>
-    simp only [witnessSetTaken_neg_dep, Finset.mem_singleton, Prod.mk.injEq] at h
+    simp only [witnessSetTaken.eq_4, Finset.mem_singleton, Prod.mk.injEq] at h
     exact absurd h.1 (hpn.disjunctN_ne_syntheticN _ _ _ _)
   | .neg (.conj ψ_a ψ_b) =>
-    rw [witnessSetTaken_neg_conj] at h
+    rw [witnessSetTaken.eq_5] at h
     exact witnessSetTaken_disjunct_det S_Ψ (.disj (.neg ψ_a) (.neg ψ_b)) ψ_L ψ_R v h
   | .neg (.disj ψ_a ψ_b) =>
-    rw [witnessSetTaken_neg_disj] at h
+    rw [witnessSetTaken.eq_6] at h
     exact witnessSetTaken_disjunct_det S_Ψ (.conj (.neg ψ_a) (.neg ψ_b)) ψ_L ψ_R v h
   | .neg (.neg ψ') =>
-    rw [witnessSetTaken_neg_neg] at h
+    rw [witnessSetTaken.eq_7] at h
     exact witnessSetTaken_disjunct_det S_Ψ ψ' ψ_L ψ_R v h
 termination_by ψ.weight
 decreasing_by all_goals simp only [Formula.weight]; omega
@@ -364,48 +212,37 @@ lemma witnessSetUntaken_subset_witnessPackages [DecidableEq N] [DecidableEq V]
   match ψ with
   | .dep _ _ => simp at hq
   | .conj ψ_L ψ_R =>
-    simp only [witnessSetUntaken_conj, Finset.mem_union] at hq
+    simp only [witnessSetUntaken.eq_2, Finset.mem_union] at hq
     simp only [witnessPackages, Finset.mem_union]
     exact hq.elim
       (fun h => Or.inl (witnessSetUntaken_subset_witnessPackages S_Ψ p ψ_L h))
       (fun h => Or.inr (witnessSetUntaken_subset_witnessPackages S_Ψ p ψ_R h))
   | .disj ψ_L ψ_R =>
-    simp only [witnessSetUntaken_disj, Finset.mem_union] at hq
-    have hunfold : witnessPackages p (.disj ψ_L ψ_R) =
-        {(hpn.disjunctN ψ_L ψ_R, hpv.zeroV), (hpn.disjunctN ψ_L ψ_R, hpv.oneV)} ∪
-        witnessPackages (hpn.disjunctN ψ_L ψ_R, hpv.zeroV) ψ_L ∪
-        witnessPackages (hpn.disjunctN ψ_L ψ_R, hpv.oneV) ψ_R := by
-      simp [witnessPackages]
-    rw [hunfold]
+    simp only [witnessSetUntaken.eq_3, Finset.mem_union] at hq
+    rw [witnessPackages.eq_3]
     rcases hq with hL | hR
     · exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inr
         (witnessSetUntaken_subset_witnessPackages S_Ψ _ ψ_L hL))))
     · exact Finset.mem_union.mpr (Or.inr
         (witnessSetUntaken_subset_witnessPackages S_Ψ _ ψ_R hR))
   | .neg (.dep n vs) =>
-    simp only [witnessSetUntaken_neg_dep] at hq
+    simp only [witnessSetUntaken.eq_4] at hq
     simp only [witnessPackages, Finset.mem_insert, Finset.mem_singleton]
     split at hq
     · simp only [Finset.mem_singleton] at hq
       exact Or.inl hq
     · simp at hq
   | .neg (.conj ψ_L ψ_R) =>
-    rw [witnessSetUntaken_neg_conj] at hq
-    have key : witnessPackages p (.neg (.conj ψ_L ψ_R)) =
-        witnessPackages p (.disj (.neg ψ_L) (.neg ψ_R)) := by simp [witnessPackages]
-    rw [key]
+    rw [witnessSetUntaken.eq_5] at hq
+    rw [witnessPackages.eq_5]
     exact witnessSetUntaken_subset_witnessPackages S_Ψ p (.disj (.neg ψ_L) (.neg ψ_R)) hq
   | .neg (.disj ψ_L ψ_R) =>
-    rw [witnessSetUntaken_neg_disj] at hq
-    have key : witnessPackages p (.neg (.disj ψ_L ψ_R)) =
-        witnessPackages p (.conj (.neg ψ_L) (.neg ψ_R)) := by simp [witnessPackages]
-    rw [key]
+    rw [witnessSetUntaken.eq_6] at hq
+    rw [witnessPackages.eq_6]
     exact witnessSetUntaken_subset_witnessPackages S_Ψ p (.conj (.neg ψ_L) (.neg ψ_R)) hq
   | .neg (.neg ψ') =>
-    rw [witnessSetUntaken_neg_neg] at hq
-    have key : witnessPackages p (.neg (.neg ψ')) = witnessPackages p ψ' := by
-      simp [witnessPackages]
-    rw [key]
+    rw [witnessSetUntaken.eq_7] at hq
+    rw [witnessPackages.eq_7]
     exact witnessSetUntaken_subset_witnessPackages S_Ψ p ψ' hq
 termination_by ψ.weight
 decreasing_by all_goals simp only [Formula.weight]; omega
@@ -417,57 +254,41 @@ lemma witnessSetTaken_subset_witnessPackages [DecidableEq N] [DecidableEq V]
   match ψ with
   | .dep _ _ => simp at hq
   | .conj ψ_L ψ_R =>
-    simp only [witnessSetTaken_conj, Finset.mem_union] at hq
+    simp only [witnessSetTaken.eq_2, Finset.mem_union] at hq
     simp only [witnessPackages, Finset.mem_union]
     exact hq.elim
       (fun h => Or.inl (witnessSetTaken_subset_witnessPackages S_Ψ p ψ_L h))
       (fun h => Or.inr (witnessSetTaken_subset_witnessPackages S_Ψ p ψ_R h))
   | .disj ψ_L ψ_R =>
-    have hunfold : witnessPackages p (.disj ψ_L ψ_R) =
-        {(hpn.disjunctN ψ_L ψ_R, hpv.zeroV), (hpn.disjunctN ψ_L ψ_R, hpv.oneV)} ∪
-        witnessPackages (hpn.disjunctN ψ_L ψ_R, hpv.zeroV) ψ_L ∪
-        witnessPackages (hpn.disjunctN ψ_L ψ_R, hpv.oneV) ψ_R := by
-      simp [witnessPackages]
-    rw [hunfold]
-    simp only [witnessSetTaken_disj] at hq
-    split at hq
-    · simp only [Finset.mem_union, Finset.mem_singleton] at hq
-      rcases hq with (rfl | hL) | hU
-      · exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inl
-          (Finset.mem_insert.mpr (Or.inl rfl)))))
-      · exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inr
-          (witnessSetTaken_subset_witnessPackages S_Ψ _ ψ_L hL))))
-      · exact Finset.mem_union.mpr (Or.inr
-          (witnessSetUntaken_subset_witnessPackages S_Ψ _ ψ_R hU))
-    · simp only [Finset.mem_union, Finset.mem_singleton] at hq
-      rcases hq with (rfl | hU) | hR
-      · exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inl
-          (Finset.mem_insert.mpr (Or.inr (Finset.mem_singleton.mpr rfl))))))
-      · exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inr
-          (witnessSetUntaken_subset_witnessPackages S_Ψ _ ψ_L hU))))
-      · exact Finset.mem_union.mpr (Or.inr
-          (witnessSetTaken_subset_witnessPackages S_Ψ _ ψ_R hR))
+    rw [witnessPackages.eq_3]
+    simp only [witnessSetTaken.eq_3] at hq
+    split at hq <;> simp only [Finset.mem_union, Finset.mem_singleton] at hq <;>
+        rcases hq with (rfl | h) | h
+    · exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inl (by simp))))
+    · exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inr
+        (witnessSetTaken_subset_witnessPackages S_Ψ _ ψ_L h))))
+    · exact Finset.mem_union.mpr (Or.inr
+        (witnessSetUntaken_subset_witnessPackages S_Ψ _ ψ_R h))
+    · exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inl (by simp))))
+    · exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inr
+        (witnessSetUntaken_subset_witnessPackages S_Ψ _ ψ_L h))))
+    · exact Finset.mem_union.mpr (Or.inr
+        (witnessSetTaken_subset_witnessPackages S_Ψ _ ψ_R h))
   | .neg (.dep n vs) =>
-    simp only [witnessSetTaken_neg_dep, Finset.mem_singleton] at hq
+    simp only [witnessSetTaken.eq_4, Finset.mem_singleton] at hq
     subst hq
     simp [witnessPackages]
   | .neg (.conj ψ_L ψ_R) =>
-    rw [witnessSetTaken_neg_conj] at hq
-    have key : witnessPackages p (.neg (.conj ψ_L ψ_R)) =
-        witnessPackages p (.disj (.neg ψ_L) (.neg ψ_R)) := by simp [witnessPackages]
-    rw [key]
+    rw [witnessSetTaken.eq_5] at hq
+    rw [witnessPackages.eq_5]
     exact witnessSetTaken_subset_witnessPackages S_Ψ p (.disj (.neg ψ_L) (.neg ψ_R)) hq
   | .neg (.disj ψ_L ψ_R) =>
-    rw [witnessSetTaken_neg_disj] at hq
-    have key : witnessPackages p (.neg (.disj ψ_L ψ_R)) =
-        witnessPackages p (.conj (.neg ψ_L) (.neg ψ_R)) := by simp [witnessPackages]
-    rw [key]
+    rw [witnessSetTaken.eq_6] at hq
+    rw [witnessPackages.eq_6]
     exact witnessSetTaken_subset_witnessPackages S_Ψ p (.conj (.neg ψ_L) (.neg ψ_R)) hq
   | .neg (.neg ψ') =>
-    rw [witnessSetTaken_neg_neg] at hq
-    have key : witnessPackages p (.neg (.neg ψ')) = witnessPackages p ψ' := by
-      simp [witnessPackages]
-    rw [key]
+    rw [witnessSetTaken.eq_7] at hq
+    rw [witnessPackages.eq_7]
     exact witnessSetTaken_subset_witnessPackages S_Ψ p ψ' hq
 termination_by ψ.weight
 decreasing_by all_goals simp only [Formula.weight]; omega
@@ -491,17 +312,17 @@ lemma witnessSetUntaken_negDep_exists [DecidableEq N] [DecidableEq V]
   match ψ with
   | .dep _ _ => simp at h
   | .conj ψ_L ψ_R =>
-    simp only [witnessSetUntaken_conj, Finset.mem_union] at h
+    simp only [witnessSetUntaken.eq_2, Finset.mem_union] at h
     exact h.elim
       (witnessSetUntaken_negDep_exists S_Ψ ψ_L n vs v)
       (witnessSetUntaken_negDep_exists S_Ψ ψ_R n vs v)
   | .disj ψ_L ψ_R =>
-    simp only [witnessSetUntaken_disj, Finset.mem_union] at h
+    simp only [witnessSetUntaken.eq_3, Finset.mem_union] at h
     exact h.elim
       (witnessSetUntaken_negDep_exists S_Ψ ψ_L n vs v)
       (witnessSetUntaken_negDep_exists S_Ψ ψ_R n vs v)
   | .neg (.dep n' vs') =>
-    simp only [witnessSetUntaken_neg_dep] at h
+    simp only [witnessSetUntaken.eq_4] at h
     split at h
     · rename_i hex
       simp only [Finset.mem_singleton] at h
@@ -510,13 +331,13 @@ lemma witnessSetUntaken_negDep_exists [DecidableEq N] [DecidableEq V]
       exact hex
     · simp at h
   | .neg (.conj ψ_L ψ_R) =>
-    rw [witnessSetUntaken_neg_conj] at h
+    rw [witnessSetUntaken.eq_5] at h
     exact witnessSetUntaken_negDep_exists S_Ψ (.disj (.neg ψ_L) (.neg ψ_R)) n vs v h
   | .neg (.disj ψ_L ψ_R) =>
-    rw [witnessSetUntaken_neg_disj] at h
+    rw [witnessSetUntaken.eq_6] at h
     exact witnessSetUntaken_negDep_exists S_Ψ (.conj (.neg ψ_L) (.neg ψ_R)) n vs v h
   | .neg (.neg ψ') =>
-    rw [witnessSetUntaken_neg_neg] at h
+    rw [witnessSetUntaken.eq_7] at h
     exact witnessSetUntaken_negDep_exists S_Ψ ψ' n vs v h
 termination_by ψ.weight
 decreasing_by all_goals simp only [Formula.weight]; omega
@@ -538,12 +359,12 @@ lemma witnessSetTaken_negDep_det [DecidableEq N] [DecidableEq V]
   match ψ with
   | .dep _ _ => simp at h
   | .conj ψ_L ψ_R =>
-    simp only [witnessSetTaken_conj, Finset.mem_union] at h
+    simp only [witnessSetTaken.eq_2, Finset.mem_union] at h
     rcases h with hL | hR
     · exact witnessSetTaken_negDep_det S_Ψ ψ_L hsat.1 n vs v hL
     · exact witnessSetTaken_negDep_det S_Ψ ψ_R hsat.2 n vs v hR
   | .disj ψ_L ψ_R =>
-    simp only [witnessSetTaken_disj] at h
+    simp only [witnessSetTaken.eq_3] at h
     split at h
     · rename_i hψL_sat
       simp only [Finset.mem_union, Finset.mem_singleton] at h
@@ -566,7 +387,7 @@ lemma witnessSetTaken_negDep_det [DecidableEq N] [DecidableEq V]
         simp [hv, hex]
       · exact witnessSetTaken_negDep_det S_Ψ ψ_R (hsat.resolve_left hψL_unsat) n vs v hR
   | .neg (.dep n' vs') =>
-    simp only [witnessSetTaken_neg_dep, Finset.mem_singleton] at h
+    simp only [witnessSetTaken.eq_4, Finset.mem_singleton] at h
     have heq := (Prod.mk.injEq _ _ _ _).mp h
     obtain ⟨rfl, rfl⟩ := hpn.syntheticN_injective heq.1
     rw [heq.2]
@@ -575,17 +396,17 @@ lemma witnessSetTaken_negDep_det [DecidableEq N] [DecidableEq V]
     have : ¬ ∃ u ∈ vs, ((n, u) : Package N V) ∈ S_Ψ := hsat
     simp [this]
   | .neg (.conj ψ_L ψ_R) =>
-    rw [witnessSetTaken_neg_conj] at h
+    rw [witnessSetTaken.eq_5] at h
     apply witnessSetTaken_negDep_det S_Ψ (.disj (.neg ψ_L) (.neg ψ_R)) _ n vs v h
     simp only [Formula.satisfies] at hsat
     exact (not_and_or.mp hsat)
   | .neg (.disj ψ_L ψ_R) =>
-    rw [witnessSetTaken_neg_disj] at h
+    rw [witnessSetTaken.eq_6] at h
     apply witnessSetTaken_negDep_det S_Ψ (.conj (.neg ψ_L) (.neg ψ_R)) _ n vs v h
     simp only [Formula.satisfies] at hsat
     exact (not_or.mp hsat)
   | .neg (.neg ψ') =>
-    rw [witnessSetTaken_neg_neg] at h
+    rw [witnessSetTaken.eq_7] at h
     apply witnessSetTaken_negDep_det S_Ψ ψ' _ n vs v h
     simp only [Formula.satisfies] at hsat
     exact not_not.mp hsat
@@ -602,30 +423,30 @@ lemma witnessSetUntaken_name_classify [DecidableEq N] [DecidableEq V]
   match ψ with
   | .dep _ _ => simp at h
   | .conj ψ_L ψ_R =>
-    simp only [witnessSetUntaken_conj, Finset.mem_union] at h
+    simp only [witnessSetUntaken.eq_2, Finset.mem_union] at h
     exact h.elim
       (witnessSetUntaken_name_classify S_Ψ ψ_L n v)
       (witnessSetUntaken_name_classify S_Ψ ψ_R n v)
   | .disj ψ_L ψ_R =>
-    simp only [witnessSetUntaken_disj, Finset.mem_union] at h
+    simp only [witnessSetUntaken.eq_3, Finset.mem_union] at h
     exact h.elim
       (witnessSetUntaken_name_classify S_Ψ ψ_L n v)
       (witnessSetUntaken_name_classify S_Ψ ψ_R n v)
   | .neg (.dep n' vs) =>
-    simp only [witnessSetUntaken_neg_dep] at h
+    simp only [witnessSetUntaken.eq_4] at h
     split at h
     · simp only [Finset.mem_singleton] at h
       have heq := (Prod.mk.injEq _ _ _ _).mp h
       exact Or.inl ⟨n', vs, heq.1⟩
     · simp at h
   | .neg (.conj ψ_L ψ_R) =>
-    rw [witnessSetUntaken_neg_conj] at h
+    rw [witnessSetUntaken.eq_5] at h
     exact witnessSetUntaken_name_classify S_Ψ (.disj (.neg ψ_L) (.neg ψ_R)) n v h
   | .neg (.disj ψ_L ψ_R) =>
-    rw [witnessSetUntaken_neg_disj] at h
+    rw [witnessSetUntaken.eq_6] at h
     exact witnessSetUntaken_name_classify S_Ψ (.conj (.neg ψ_L) (.neg ψ_R)) n v h
   | .neg (.neg ψ') =>
-    rw [witnessSetUntaken_neg_neg] at h
+    rw [witnessSetUntaken.eq_7] at h
     exact witnessSetUntaken_name_classify S_Ψ ψ' n v h
 termination_by ψ.weight
 decreasing_by all_goals simp only [Formula.weight]; omega
@@ -639,12 +460,12 @@ lemma witnessSetTaken_name_classify [DecidableEq N] [DecidableEq V]
   match ψ with
   | .dep _ _ => simp at h
   | .conj ψ_L ψ_R =>
-    simp only [witnessSetTaken_conj, Finset.mem_union] at h
+    simp only [witnessSetTaken.eq_2, Finset.mem_union] at h
     exact h.elim
       (witnessSetTaken_name_classify S_Ψ ψ_L n v)
       (witnessSetTaken_name_classify S_Ψ ψ_R n v)
   | .disj ψ_L ψ_R =>
-    simp only [witnessSetTaken_disj] at h
+    simp only [witnessSetTaken.eq_3] at h
     split at h
     · simp only [Finset.mem_union, Finset.mem_singleton] at h
       rcases h with (hsing | hL) | hU
@@ -659,20 +480,38 @@ lemma witnessSetTaken_name_classify [DecidableEq N] [DecidableEq V]
       · exact witnessSetUntaken_name_classify S_Ψ ψ_L n v hU
       · exact witnessSetTaken_name_classify S_Ψ ψ_R n v hR
   | .neg (.dep n' vs) =>
-    simp only [witnessSetTaken_neg_dep, Finset.mem_singleton] at h
+    simp only [witnessSetTaken.eq_4, Finset.mem_singleton] at h
     have heq := (Prod.mk.injEq _ _ _ _).mp h
     exact Or.inl ⟨n', vs, heq.1⟩
   | .neg (.conj ψ_L ψ_R) =>
-    rw [witnessSetTaken_neg_conj] at h
+    rw [witnessSetTaken.eq_5] at h
     exact witnessSetTaken_name_classify S_Ψ (.disj (.neg ψ_L) (.neg ψ_R)) n v h
   | .neg (.disj ψ_L ψ_R) =>
-    rw [witnessSetTaken_neg_disj] at h
+    rw [witnessSetTaken.eq_6] at h
     exact witnessSetTaken_name_classify S_Ψ (.conj (.neg ψ_L) (.neg ψ_R)) n v h
   | .neg (.neg ψ') =>
-    rw [witnessSetTaken_neg_neg] at h
+    rw [witnessSetTaken.eq_7] at h
     exact witnessSetTaken_name_classify S_Ψ ψ' n v h
 termination_by ψ.weight
 decreasing_by all_goals simp only [Formula.weight]; omega
+
+/-! ## No original-name witnesses -/
+
+lemma witnessSetUntaken_not_orig [DecidableEq N] [DecidableEq V]
+    (S_Ψ : Finset (Package N V))
+    (ψ : Formula N V) (n : N) (v : V') :
+    (hpn.origN n, v) ∉ witnessSetUntaken S_Ψ ψ := fun h => by
+  rcases witnessSetUntaken_name_classify S_Ψ ψ _ v h with ⟨m, vs, he⟩ | ⟨ψ_L, ψ_R, he⟩
+  · exact hpn.origN_ne_syntheticN n m vs he
+  · exact hpn.origN_ne_disjunctN n ψ_L ψ_R he
+
+lemma witnessSetTaken_not_orig [DecidableEq N] [DecidableEq V]
+    (S_Ψ : Finset (Package N V))
+    (ψ : Formula N V) (n : N) (v : V') :
+    (hpn.origN n, v) ∉ witnessSetTaken S_Ψ ψ := fun h => by
+  rcases witnessSetTaken_name_classify S_Ψ ψ _ v h with ⟨m, vs, he⟩ | ⟨ψ_L, ψ_R, he⟩
+  · exact hpn.origN_ne_syntheticN n m vs he
+  · exact hpn.origN_ne_disjunctN n ψ_L ψ_R he
 
 /-- For any witness `(n, v)` in a context-appropriate witness set, the version
 `v` is uniquely determined by `n` and `S_Ψ` (independent of which formula
@@ -778,15 +617,15 @@ private lemma encodeNNF_dep_closure [DecidableEq N] [DecidableEq V]
     · have hwit' : (q₀ ∉ CW ∧ witnessSetUntaken S_Ψ ψ_L ⊆ CW) ∨
           ((S_Ψ ⊨ ψ_L) ∧ witnessSetTaken S_Ψ ψ_L ⊆ CW) := by
         rcases hwit with ⟨hq₀, hu⟩ | ⟨hsat, ht⟩
-        · exact Or.inl ⟨hq₀, fun x hx => hu (by simp [witnessSetUntaken_conj]; exact Or.inl hx)⟩
-        · exact Or.inr ⟨hsat.1, fun x hx => ht (by simp [witnessSetTaken_conj]; exact Or.inl hx)⟩
+        · exact Or.inl ⟨hq₀, fun x hx => hu (by simp [witnessSetUntaken.eq_2]; exact Or.inl hx)⟩
+        · exact Or.inr ⟨hsat.1, fun x hx => ht (by simp [witnessSetTaken.eq_2]; exact Or.inl hx)⟩
       exact encodeNNF_dep_closure S_Ψ CW mem_embed hCW_orig hCW_disj_zero hCW_disj_one
         q₀ ψ_L hwit' q m vs hL hq
     · have hwit' : (q₀ ∉ CW ∧ witnessSetUntaken S_Ψ ψ_R ⊆ CW) ∨
           ((S_Ψ ⊨ ψ_R) ∧ witnessSetTaken S_Ψ ψ_R ⊆ CW) := by
         rcases hwit with ⟨hq₀, hu⟩ | ⟨hsat, ht⟩
-        · exact Or.inl ⟨hq₀, fun x hx => hu (by simp [witnessSetUntaken_conj]; exact Or.inr hx)⟩
-        · exact Or.inr ⟨hsat.2, fun x hx => ht (by simp [witnessSetTaken_conj]; exact Or.inr hx)⟩
+        · exact Or.inl ⟨hq₀, fun x hx => hu (by simp [witnessSetUntaken.eq_2]; exact Or.inr hx)⟩
+        · exact Or.inr ⟨hsat.2, fun x hx => ht (by simp [witnessSetTaken.eq_2]; exact Or.inr hx)⟩
       exact encodeNNF_dep_closure S_Ψ CW mem_embed hCW_orig hCW_disj_zero hCW_disj_one
         q₀ ψ_R hwit' q m vs hR hq
   | .disj ψ_L ψ_R =>
@@ -800,11 +639,11 @@ private lemma encodeNNF_dep_closure [DecidableEq N] [DecidableEq V]
       · exact absurd hq hq₀
       · by_cases hψL_sat : S_Ψ ⊨ ψ_L
         · refine ⟨hpv.zeroV, Finset.mem_insert_self _ _, ?_⟩
-          apply hwit_t; simp only [witnessSetTaken_disj, if_pos hψL_sat]
+          apply hwit_t; simp only [witnessSetTaken.eq_3, if_pos hψL_sat]
           exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inl
             (Finset.mem_singleton.mpr rfl))))
         · refine ⟨hpv.oneV, by simp [Finset.mem_insert], ?_⟩
-          apply hwit_t; simp only [witnessSetTaken_disj, if_neg hψL_sat]
+          apply hwit_t; simp only [witnessSetTaken.eq_3, if_neg hψL_sat]
           exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inl
             (Finset.mem_singleton.mpr rfl))))
     · -- body ψ_L: new q₀' = (disjunctN ψ_L ψ_R, zeroV)
@@ -816,16 +655,16 @@ private lemma encodeNNF_dep_closure [DecidableEq N] [DecidableEq V]
       · -- new q₀' ∉ CW: derive untaken witnesses
         have hwL : witnessSetUntaken S_Ψ ψ_L ⊆ CW := by
           rcases hwit with ⟨_, hu⟩ | ⟨_, ht⟩
-          · exact fun x hx => hu (by simp [witnessSetUntaken_disj]; exact Or.inl hx)
+          · exact fun x hx => hu (by simp [witnessSetUntaken.eq_3]; exact Or.inl hx)
           · by_cases hψL_sat : S_Ψ ⊨ ψ_L
             · -- sat ψ_L: (disjunctN, zeroV) ∈ witnessSetTaken (disj) ⊆ CW, contradiction
               exfalso; apply hq₀'
-              apply ht; simp only [witnessSetTaken_disj, if_pos hψL_sat]
+              apply ht; simp only [witnessSetTaken.eq_3, if_pos hψL_sat]
               exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inl
                 (Finset.mem_singleton.mpr rfl))))
             · -- ¬sat ψ_L: witnessSetTaken (disj) = {oneV} ∪ untaken(ψ_L) ∪ taken(ψ_R)
               exact fun x hx => ht (by
-                simp only [witnessSetTaken_disj, if_neg hψL_sat]
+                simp only [witnessSetTaken.eq_3, if_neg hψL_sat]
                 exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inr hx))))
         exact encodeNNF_dep_closure S_Ψ CW mem_embed hCW_orig hCW_disj_zero hCW_disj_one
           _ ψ_L (Or.inl ⟨hq₀', hwL⟩) q m vs hbody hq
@@ -836,13 +675,13 @@ private lemma encodeNNF_dep_closure [DecidableEq N] [DecidableEq V]
           _ ψ_R (Or.inr ⟨hsat_R, htR⟩) q m vs hbody hq
       · have hwR : witnessSetUntaken S_Ψ ψ_R ⊆ CW := by
           rcases hwit with ⟨_, hu⟩ | ⟨_, ht⟩
-          · exact fun x hx => hu (by simp [witnessSetUntaken_disj]; exact Or.inr hx)
+          · exact fun x hx => hu (by simp [witnessSetUntaken.eq_3]; exact Or.inr hx)
           · by_cases hψL_sat : S_Ψ ⊨ ψ_L
             · exact fun x hx => ht (by
-                simp only [witnessSetTaken_disj, if_pos hψL_sat]
+                simp only [witnessSetTaken.eq_3, if_pos hψL_sat]
                 exact Finset.mem_union.mpr (Or.inr hx))
             · exfalso; apply hq₀'
-              apply ht; simp only [witnessSetTaken_disj, if_neg hψL_sat]
+              apply ht; simp only [witnessSetTaken.eq_3, if_neg hψL_sat]
               exact Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inl
                 (Finset.mem_singleton.mpr rfl))))
         exact encodeNNF_dep_closure S_Ψ CW mem_embed hCW_orig hCW_disj_zero hCW_disj_one
@@ -855,7 +694,7 @@ private lemma encodeNNF_dep_closure [DecidableEq N] [DecidableEq V]
       rcases hwit with ⟨hq₀, _⟩ | ⟨_, hwit_t⟩
       · exact absurd hq hq₀
       · refine ⟨hpv.oneV, Finset.mem_singleton.mpr rfl, ?_⟩
-        apply hwit_t; simp only [witnessSetTaken_neg_dep]
+        apply hwit_t; simp only [witnessSetTaken.eq_4]
         exact Finset.mem_singleton.mpr rfl
     · -- blocker: q = (origN n, origV u)
       obtain ⟨⟨pn, pv⟩, hpS, hpeq⟩ := hCW_orig n (hpv.origV u) hq
@@ -866,43 +705,33 @@ private lemma encodeNNF_dep_closure [DecidableEq N] [DecidableEq V]
       rcases hwit with ⟨_, hwit_u⟩ | ⟨hsat, _⟩
       · -- untaken: (n, u) ∈ S_Ψ, so witnessSetUntaken adds (syntheticN, zeroV)
         refine ⟨hpv.zeroV, Finset.mem_singleton.mpr rfl, ?_⟩
-        apply hwit_u; simp only [witnessSetUntaken_neg_dep]
+        apply hwit_u; simp only [witnessSetUntaken.eq_4]
         rw [if_pos (⟨pv, hu, hpS⟩ : ∃ u ∈ dvs, ((pn, u) : Package N V) ∈ S_Ψ)]
         exact Finset.mem_singleton.mpr rfl
       · -- taken: S_Ψ ⊨ .neg(.dep n dvs) means no (n, u) ∈ S_Ψ. Contradiction.
         exfalso; exact hsat ⟨pv, hu, hpS⟩
   | .neg (.conj ψ_L ψ_R) =>
-    have keyE : encodeNNF q₀ (.neg (.conj ψ_L ψ_R)) =
-        encodeNNF q₀ (.disj (.neg ψ_L) (.neg ψ_R)) := by simp [encodeNNF]
-    rw [keyE] at henc
-    have hwit' : (q₀ ∉ CW ∧ witnessSetUntaken S_Ψ (.disj (.neg ψ_L) (.neg ψ_R)) ⊆ CW) ∨
-        ((S_Ψ ⊨ Formula.disj (.neg ψ_L) (.neg ψ_R)) ∧
-          witnessSetTaken S_Ψ (.disj (.neg ψ_L) (.neg ψ_R)) ⊆ CW) := by
-      rcases hwit with ⟨hq₀, hu⟩ | ⟨hsat, ht⟩
-      · exact Or.inl ⟨hq₀, by rw [← witnessSetUntaken_neg_conj]; exact hu⟩
-      · exact Or.inr ⟨not_and_or.mp hsat, by rw [← witnessSetTaken_neg_conj]; exact ht⟩
+    rw [encodeNNF.eq_5] at henc
+    have hwit' := hwit.imp
+      (And.imp_right fun hu => by rwa [witnessSetUntaken.eq_5] at hu)
+      (And.imp (fun hsat => not_and_or.mp hsat)
+        (fun ht => by rwa [witnessSetTaken.eq_5] at ht))
     exact encodeNNF_dep_closure S_Ψ CW mem_embed hCW_orig hCW_disj_zero hCW_disj_one
       q₀ _ hwit' q m vs henc hq
   | .neg (.disj ψ_L ψ_R) =>
-    have keyE : encodeNNF q₀ (.neg (.disj ψ_L ψ_R)) =
-        encodeNNF q₀ (.conj (.neg ψ_L) (.neg ψ_R)) := by simp [encodeNNF]
-    rw [keyE] at henc
-    have hwit' : (q₀ ∉ CW ∧ witnessSetUntaken S_Ψ (.conj (.neg ψ_L) (.neg ψ_R)) ⊆ CW) ∨
-        ((S_Ψ ⊨ Formula.conj (.neg ψ_L) (.neg ψ_R)) ∧
-          witnessSetTaken S_Ψ (.conj (.neg ψ_L) (.neg ψ_R)) ⊆ CW) := by
-      rcases hwit with ⟨hq₀, hu⟩ | ⟨hsat, ht⟩
-      · exact Or.inl ⟨hq₀, by rw [← witnessSetUntaken_neg_disj]; exact hu⟩
-      · exact Or.inr ⟨not_or.mp hsat, by rw [← witnessSetTaken_neg_disj]; exact ht⟩
+    rw [encodeNNF.eq_6] at henc
+    have hwit' := hwit.imp
+      (And.imp_right fun hu => by rwa [witnessSetUntaken.eq_6] at hu)
+      (And.imp (fun hsat => not_or.mp hsat)
+        (fun ht => by rwa [witnessSetTaken.eq_6] at ht))
     exact encodeNNF_dep_closure S_Ψ CW mem_embed hCW_orig hCW_disj_zero hCW_disj_one
       q₀ _ hwit' q m vs henc hq
   | .neg (.neg ψ') =>
-    have keyE : encodeNNF q₀ (.neg (.neg ψ')) = encodeNNF q₀ ψ' := by simp [encodeNNF]
-    rw [keyE] at henc
-    have hwit' : (q₀ ∉ CW ∧ witnessSetUntaken S_Ψ ψ' ⊆ CW) ∨
-        ((S_Ψ ⊨ ψ') ∧ witnessSetTaken S_Ψ ψ' ⊆ CW) := by
-      rcases hwit with ⟨hq₀, hu⟩ | ⟨hsat, ht⟩
-      · exact Or.inl ⟨hq₀, by rw [← witnessSetUntaken_neg_neg]; exact hu⟩
-      · exact Or.inr ⟨not_not.mp hsat, by rw [← witnessSetTaken_neg_neg]; exact ht⟩
+    rw [encodeNNF.eq_7] at henc
+    have hwit' := hwit.imp
+      (And.imp_right fun hu => by rwa [witnessSetUntaken.eq_7] at hu)
+      (And.imp (fun hsat => not_not.mp hsat)
+        (fun ht => by rwa [witnessSetTaken.eq_7] at ht))
     exact encodeNNF_dep_closure S_Ψ CW mem_embed hCW_orig hCW_disj_zero hCW_disj_one
       q₀ ψ' hwit' q m vs henc hq
 termination_by ψ.weight
@@ -964,16 +793,16 @@ private lemma witnessSetTaken_disj_zero_mono [DecidableEq N] [DecidableEq V]
   match ψ with
   | .dep _ _ => exact absurd hw (by simp)
   | .conj ψ_a ψ_b =>
-    simp only [witnessSetTaken_conj, Finset.mem_union] at hw
+    simp only [witnessSetTaken.eq_2, Finset.mem_union] at hw
     rcases hw with hL | hR
     · obtain ⟨hs, h1, h2⟩ := witnessSetTaken_disj_zero_mono S_Ψ ψ_a ψ_L ψ_R hL
-      exact ⟨hs, fun x hx => by simp only [witnessSetTaken_conj]; exact Finset.mem_union.mpr (Or.inl (h1 hx)),
-             fun x hx => by simp only [witnessSetTaken_conj]; exact Finset.mem_union.mpr (Or.inl (h2 hx))⟩
+      exact ⟨hs, fun x hx => by simp only [witnessSetTaken.eq_2]; exact Finset.mem_union.mpr (Or.inl (h1 hx)),
+             fun x hx => by simp only [witnessSetTaken.eq_2]; exact Finset.mem_union.mpr (Or.inl (h2 hx))⟩
     · obtain ⟨hs, h1, h2⟩ := witnessSetTaken_disj_zero_mono S_Ψ ψ_b ψ_L ψ_R hR
-      exact ⟨hs, fun x hx => by simp only [witnessSetTaken_conj]; exact Finset.mem_union.mpr (Or.inr (h1 hx)),
-             fun x hx => by simp only [witnessSetTaken_conj]; exact Finset.mem_union.mpr (Or.inr (h2 hx))⟩
+      exact ⟨hs, fun x hx => by simp only [witnessSetTaken.eq_2]; exact Finset.mem_union.mpr (Or.inr (h1 hx)),
+             fun x hx => by simp only [witnessSetTaken.eq_2]; exact Finset.mem_union.mpr (Or.inr (h2 hx))⟩
   | .disj ψ_a ψ_b =>
-    simp only [witnessSetTaken_disj] at hw
+    simp only [witnessSetTaken.eq_3] at hw
     split at hw
     · rename_i hψa_sat
       simp only [Finset.mem_union, Finset.mem_singleton] at hw
@@ -981,13 +810,13 @@ private lemma witnessSetTaken_disj_zero_mono [DecidableEq N] [DecidableEq V]
       · have heq := (Prod.mk.injEq _ _ _ _).mp hsing
         obtain ⟨rfl, rfl⟩ := hpn.disjunctN_injective heq.1
         refine ⟨hψa_sat, ?_, ?_⟩
-        · intro x hx; simp only [witnessSetTaken_disj, if_pos hψa_sat, Finset.mem_union, Finset.mem_singleton]
+        · intro x hx; simp only [witnessSetTaken.eq_3, if_pos hψa_sat, Finset.mem_union, Finset.mem_singleton]
           exact Or.inl (Or.inr hx)
-        · intro x hx; simp only [witnessSetTaken_disj, if_pos hψa_sat, Finset.mem_union, Finset.mem_singleton]
+        · intro x hx; simp only [witnessSetTaken.eq_3, if_pos hψa_sat, Finset.mem_union, Finset.mem_singleton]
           exact Or.inr hx
       · obtain ⟨hs, h1, h2⟩ := witnessSetTaken_disj_zero_mono S_Ψ ψ_a ψ_L ψ_R hL
         refine ⟨hs, ?_, ?_⟩ <;> {
-          intro x hx; simp only [witnessSetTaken_disj, if_pos hψa_sat, Finset.mem_union, Finset.mem_singleton]
+          intro x hx; simp only [witnessSetTaken.eq_3, if_pos hψa_sat, Finset.mem_union, Finset.mem_singleton]
           exact Or.inl (Or.inr (by first | exact h1 hx | exact h2 hx)) }
       · exact absurd hU (witnessSetUntaken_disjunct_det S_Ψ ψ_b ψ_L ψ_R _)
     · rename_i hψa_unsat
@@ -998,19 +827,19 @@ private lemma witnessSetTaken_disj_zero_mono [DecidableEq N] [DecidableEq V]
       · exact absurd hU (witnessSetUntaken_disjunct_det S_Ψ ψ_a ψ_L ψ_R _)
       · obtain ⟨hs, h1, h2⟩ := witnessSetTaken_disj_zero_mono S_Ψ ψ_b ψ_L ψ_R hR
         refine ⟨hs, ?_, ?_⟩ <;> {
-          intro x hx; simp only [witnessSetTaken_disj, if_neg hψa_unsat, Finset.mem_union, Finset.mem_singleton]
+          intro x hx; simp only [witnessSetTaken.eq_3, if_neg hψa_unsat, Finset.mem_union, Finset.mem_singleton]
           exact Or.inr (by first | exact h1 hx | exact h2 hx) }
   | .neg (.dep n vs) =>
-    simp only [witnessSetTaken_neg_dep, Finset.mem_singleton, Prod.mk.injEq] at hw
+    simp only [witnessSetTaken.eq_4, Finset.mem_singleton, Prod.mk.injEq] at hw
     exact absurd hw.1 (hpn.disjunctN_ne_syntheticN ψ_L ψ_R n vs)
   | .neg (.conj ψ_a ψ_b) =>
-    rw [witnessSetTaken_neg_conj] at hw ⊢
+    rw [witnessSetTaken.eq_5] at hw ⊢
     exact witnessSetTaken_disj_zero_mono S_Ψ (.disj (.neg ψ_a) (.neg ψ_b)) ψ_L ψ_R hw
   | .neg (.disj ψ_a ψ_b) =>
-    rw [witnessSetTaken_neg_disj] at hw ⊢
+    rw [witnessSetTaken.eq_6] at hw ⊢
     exact witnessSetTaken_disj_zero_mono S_Ψ (.conj (.neg ψ_a) (.neg ψ_b)) ψ_L ψ_R hw
   | .neg (.neg ψ') =>
-    rw [witnessSetTaken_neg_neg] at hw ⊢
+    rw [witnessSetTaken.eq_7] at hw ⊢
     exact witnessSetTaken_disj_zero_mono S_Ψ ψ' ψ_L ψ_R hw
 termination_by ψ.weight
 decreasing_by all_goals (simp only [Formula.weight]; omega)
@@ -1026,16 +855,16 @@ private lemma witnessSetTaken_disj_one_mono [DecidableEq N] [DecidableEq V]
   match ψ with
   | .dep _ _ => exact absurd hw (by simp)
   | .conj ψ_a ψ_b =>
-    simp only [witnessSetTaken_conj, Finset.mem_union] at hw
+    simp only [witnessSetTaken.eq_2, Finset.mem_union] at hw
     rcases hw with hL | hR
     · obtain ⟨hs, h1, h2⟩ := witnessSetTaken_disj_one_mono S_Ψ ψ_a hsat.1 ψ_L ψ_R hL
-      exact ⟨hs, fun x hx => by simp only [witnessSetTaken_conj]; exact Finset.mem_union.mpr (Or.inl (h1 hx)),
-             fun x hx => by simp only [witnessSetTaken_conj]; exact Finset.mem_union.mpr (Or.inl (h2 hx))⟩
+      exact ⟨hs, fun x hx => by simp only [witnessSetTaken.eq_2]; exact Finset.mem_union.mpr (Or.inl (h1 hx)),
+             fun x hx => by simp only [witnessSetTaken.eq_2]; exact Finset.mem_union.mpr (Or.inl (h2 hx))⟩
     · obtain ⟨hs, h1, h2⟩ := witnessSetTaken_disj_one_mono S_Ψ ψ_b hsat.2 ψ_L ψ_R hR
-      exact ⟨hs, fun x hx => by simp only [witnessSetTaken_conj]; exact Finset.mem_union.mpr (Or.inr (h1 hx)),
-             fun x hx => by simp only [witnessSetTaken_conj]; exact Finset.mem_union.mpr (Or.inr (h2 hx))⟩
+      exact ⟨hs, fun x hx => by simp only [witnessSetTaken.eq_2]; exact Finset.mem_union.mpr (Or.inr (h1 hx)),
+             fun x hx => by simp only [witnessSetTaken.eq_2]; exact Finset.mem_union.mpr (Or.inr (h2 hx))⟩
   | .disj ψ_a ψ_b =>
-    simp only [witnessSetTaken_disj] at hw
+    simp only [witnessSetTaken.eq_3] at hw
     split at hw
     · rename_i hψa_sat
       simp only [Finset.mem_union, Finset.mem_singleton] at hw
@@ -1044,7 +873,7 @@ private lemma witnessSetTaken_disj_one_mono [DecidableEq N] [DecidableEq V]
         exact absurd heq.2.symm hpv.zeroV_ne_oneV
       · obtain ⟨hs, h1, h2⟩ := witnessSetTaken_disj_one_mono S_Ψ ψ_a hψa_sat ψ_L ψ_R hL
         refine ⟨hs, ?_, ?_⟩ <;> {
-          intro x hx; simp only [witnessSetTaken_disj, if_pos hψa_sat, Finset.mem_union, Finset.mem_singleton]
+          intro x hx; simp only [witnessSetTaken.eq_3, if_pos hψa_sat, Finset.mem_union, Finset.mem_singleton]
           exact Or.inl (Or.inr (by first | exact h1 hx | exact h2 hx)) }
       · exact absurd hU (witnessSetUntaken_disjunct_det S_Ψ ψ_b ψ_L ψ_R _)
     · rename_i hψa_unsat
@@ -1053,26 +882,26 @@ private lemma witnessSetTaken_disj_one_mono [DecidableEq N] [DecidableEq V]
       · have heq := (Prod.mk.injEq _ _ _ _).mp hsing
         obtain ⟨rfl, rfl⟩ := hpn.disjunctN_injective heq.1
         refine ⟨hsat.resolve_left hψa_unsat, ?_, ?_⟩
-        · intro x hx; simp only [witnessSetTaken_disj, if_neg hψa_unsat, Finset.mem_union, Finset.mem_singleton]
+        · intro x hx; simp only [witnessSetTaken.eq_3, if_neg hψa_unsat, Finset.mem_union, Finset.mem_singleton]
           exact Or.inl (Or.inr hx)
-        · intro x hx; simp only [witnessSetTaken_disj, if_neg hψa_unsat, Finset.mem_union, Finset.mem_singleton]
+        · intro x hx; simp only [witnessSetTaken.eq_3, if_neg hψa_unsat, Finset.mem_union, Finset.mem_singleton]
           exact Or.inr hx
       · exact absurd hU (witnessSetUntaken_disjunct_det S_Ψ ψ_a ψ_L ψ_R _)
       · obtain ⟨hs, h1, h2⟩ := witnessSetTaken_disj_one_mono S_Ψ ψ_b (hsat.resolve_left hψa_unsat) ψ_L ψ_R hR
         refine ⟨hs, ?_, ?_⟩ <;> {
-          intro x hx; simp only [witnessSetTaken_disj, if_neg hψa_unsat, Finset.mem_union, Finset.mem_singleton]
+          intro x hx; simp only [witnessSetTaken.eq_3, if_neg hψa_unsat, Finset.mem_union, Finset.mem_singleton]
           exact Or.inr (by first | exact h1 hx | exact h2 hx) }
   | .neg (.dep n vs) =>
-    simp only [witnessSetTaken_neg_dep, Finset.mem_singleton, Prod.mk.injEq] at hw
+    simp only [witnessSetTaken.eq_4, Finset.mem_singleton, Prod.mk.injEq] at hw
     exact absurd hw.1 (hpn.disjunctN_ne_syntheticN ψ_L ψ_R n vs)
   | .neg (.conj ψ_a ψ_b) =>
-    rw [witnessSetTaken_neg_conj] at hw ⊢
+    rw [witnessSetTaken.eq_5] at hw ⊢
     exact witnessSetTaken_disj_one_mono S_Ψ _ (by exact not_and_or.mp hsat) ψ_L ψ_R hw
   | .neg (.disj ψ_a ψ_b) =>
-    rw [witnessSetTaken_neg_disj] at hw ⊢
+    rw [witnessSetTaken.eq_6] at hw ⊢
     exact witnessSetTaken_disj_one_mono S_Ψ _ (by exact not_or.mp hsat) ψ_L ψ_R hw
   | .neg (.neg ψ') =>
-    rw [witnessSetTaken_neg_neg] at hw ⊢
+    rw [witnessSetTaken.eq_7] at hw ⊢
     exact witnessSetTaken_disj_one_mono S_Ψ ψ' (by exact not_not.mp hsat) ψ_L ψ_R hw
 termination_by ψ.weight
 decreasing_by all_goals (simp only [Formula.weight]; omega)
