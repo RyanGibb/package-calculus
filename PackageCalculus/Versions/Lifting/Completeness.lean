@@ -11,13 +11,13 @@ variable {N : Type*} [DecidableEq N]
 
 /-- If `S` is a VF-resolution for the lifted deps, it is a resolution for
     the original concrete `Δ`. -/
-theorem liftVFDeps_completeness [LinearOrder V]
+theorem liftResolution_completeness [LinearOrder V]
     (R : Real N V) (Δ : DepRel N V) (r : Package N V) (S : Finset (Package N V))
     (hne : ∀ p m vs, (p, m, vs) ∈ Δ → vs.Nonempty)
     (hsub : ∀ p m vs, (p, m, vs) ∈ Δ → vs ⊆ repoVersions R m)
     (hres : IsVFResolution R (liftVFDeps R Δ) r S) :
     IsResolution R Δ r S := by
   rw [← liftVFDeps_vfReduce R Δ hne hsub]
-  exact (vfReduction_correct R (liftVFDeps R Δ) r S).mpr hres
+  exact (version_formula_correct R (liftVFDeps R Δ) r S).mpr hres
 
 end PackageCalculus

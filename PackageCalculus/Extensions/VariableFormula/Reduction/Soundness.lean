@@ -194,7 +194,7 @@ private def encode_satisfies [DecidableEq N] [DecidableEq V]
   decreasing_by all_goals simp only [Formula.weight]; omega
 
 -- Paper Thm 4.6.4 (Variable Formula Reduction Soundness).
-theorem varFormula_soundness
+theorem variable_formula_soundness
     [DecidableEq N] [DecidableEq V] [DecidableEq X] [DecidableEq Y]
     [LT Y] [DecidableRel (· < · : Y → Y → Prop)] [Fintype X] [Nonempty Y]
     (Y_x : X → Finset Y)

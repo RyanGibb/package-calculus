@@ -15,7 +15,7 @@ theorem liftResolution_soundness
     (r : Package N V) (S' : Finset (Package N' V'))
     (hres : IsResolution (pfReal R_Ψ Δ_Ψ) (pfDeps Δ_Ψ) (embedPkg r) S') :
     IsPFResolution R_Ψ Δ_Ψ r (liftResolution S') := by
-  have h := pkgFormula_soundness R_Ψ Δ_Ψ r S' hres
+  have h := package_formula_soundness R_Ψ Δ_Ψ r S' hres
   suffices heq : liftResolution S' = S'.preimage embedPkg
       (Set.InjOn.mono (Set.subset_univ _)
         (Function.Injective.injOn embedPkgFn_injective)) by

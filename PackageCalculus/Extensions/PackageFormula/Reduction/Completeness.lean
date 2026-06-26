@@ -945,7 +945,7 @@ private lemma completenessWitness_disj_one [DecidableEq N] [DecidableEq V]
         grind;
     · exact False.elim ( witnessSetUntaken_disjunct_det S_Ψ c ψ_L ψ_R _ h₂ )
 
-/-! ## `pkgFormula_completeness`
+/-! ## `package_formula_completeness`
 
 The proof structure:
 - `subset`: each witness package is in `pfReal` (via `witnessSet*_subset_witnessPackages`).
@@ -956,7 +956,7 @@ The proof structure:
   the formula.  See `encodeNNF_dep_closure` below. -/
 
 -- Paper Thm 4.5.6 (Package Formula Reduction Completeness).
-theorem pkgFormula_completeness [DecidableEq N] [DecidableEq V]
+theorem package_formula_completeness [DecidableEq N] [DecidableEq V]
     (R_Ψ : Real N V) (Δ_Ψ : PFDepRel N V)
     (r : Package N V)
     (S_Ψ : Finset (Package N V))

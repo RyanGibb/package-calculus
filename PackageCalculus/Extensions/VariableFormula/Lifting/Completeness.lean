@@ -35,7 +35,7 @@ theorem liftResolution_completeness
         (embedPkg (X := X) (Y := Y) r) S' ∧
       liftResolution (X := X) (Y := Y) S' = S_Ψ :=
   ⟨completenessWitness (N' := N') (V' := V') S_Ψ Δ_Ψ σ,
-   varFormula_completeness Y_x R_Ψ Δ_Ψ r σ hσ_dom S_Ψ hres,
+   variable_formula_completeness Y_x R_Ψ Δ_Ψ r σ hσ_dom S_Ψ hres,
    liftResolution_completenessWitness S_Ψ Δ_Ψ σ⟩
 
 

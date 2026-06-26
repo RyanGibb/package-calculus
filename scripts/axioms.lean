@@ -1,6 +1,6 @@
 import PackageCalculus
 
-#print axioms PackageCalculus.vfReduction_correct
+#print axioms PackageCalculus.version_formula_correct
 
 #print axioms PackageCalculus.Conflict.conflict_soundness
 #print axioms PackageCalculus.Conflict.conflict_completeness
@@ -14,11 +14,11 @@ import PackageCalculus
 #print axioms PackageCalculus.Feature.feature_soundness
 #print axioms PackageCalculus.Feature.feature_completeness
 
-#print axioms PackageCalculus.PkgFormula.pkgFormula_soundness
-#print axioms PackageCalculus.PkgFormula.pkgFormula_completeness
+#print axioms PackageCalculus.PkgFormula.package_formula_soundness
+#print axioms PackageCalculus.PkgFormula.package_formula_completeness
 
-#print axioms PackageCalculus.VarFormula.varFormula_soundness
-#print axioms PackageCalculus.VarFormula.varFormula_completeness
+#print axioms PackageCalculus.VarFormula.variable_formula_soundness
+#print axioms PackageCalculus.VarFormula.variable_formula_completeness
 
 #print axioms PackageCalculus.Virtual.virtual_soundness
 #print axioms PackageCalculus.Virtual.virtual_completeness

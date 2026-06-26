@@ -18,7 +18,7 @@ theorem liftResolution_soundness
       (embedPkg (X := X) (Y := Y) r) S') :
     IsVFResolution R_Ψ Δ_Ψ r (liftResolution (X := X) (Y := Y) S')
       (extractAssignment (N := N) (V := V) (X := X) (Y := Y) S') := by
-  have hsound := varFormula_soundness Y_x R_Ψ Δ_Ψ r S' hres
+  have hsound := variable_formula_soundness Y_x R_Ψ Δ_Ψ r S' hres
   -- Show liftResolution and preimageS agree
   suffices heq : liftResolution (X := X) (Y := Y) S' =
       S'.preimage (embedPkg (X := X) (Y := Y))
