@@ -23,6 +23,6 @@ structure IsPeerResolution
   peer_satisfaction : ∀ p ∈ S, ∀ n : N, ∀ vs : Finset V,
     (p, n, vs) ∈ Θ →
     ∀ q, (p, q) ∈ π → ∀ us : Finset V, (q, n, us) ∈ Δ →
-    ∀ w, w ∈ us → (n, w) ∈ S → ((n, w), q) ∈ π → w ∈ vs
+    ∀ v, v ∈ us → (n, v) ∈ S → ((n, v), q) ∈ π → v ∈ vs
 
 end PackageCalculus.PeerDep
