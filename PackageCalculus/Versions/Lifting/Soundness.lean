@@ -15,8 +15,8 @@ variable {N : Type*} [DecidableEq N]
     lifted `VFDepRel`. -/
 theorem liftResolution_soundness [LinearOrder V]
     (R : Real N V) (Δ : DepRel N V) (r : Package N V) (S : Finset (Package N V))
-    (hne : ∀ p m vs, (p, m, vs) ∈ Δ → vs.Nonempty)
-    (hsub : ∀ p m vs, (p, m, vs) ∈ Δ → vs ⊆ repoVersions R m)
+    (hne : Δ.NonEmpty)
+    (hsub : Δ.DependeesExist R)
     (hres : IsResolution R Δ r S) :
     IsVFResolution R (liftVFDeps R Δ) r S := by
   rw [← version_formula_correct]

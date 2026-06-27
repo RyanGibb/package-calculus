@@ -14,8 +14,8 @@ variable {N : Type*} [DecidableEq N]
     Requires every version set to be nonempty and contained in the repository. -/
 theorem liftVFDeps_vfReduce [LinearOrder V]
     (R : Real N V) (Δ : DepRel N V)
-    (hne : ∀ p m vs, (p, m, vs) ∈ Δ → vs.Nonempty)
-    (hsub : ∀ p m vs, (p, m, vs) ∈ Δ → vs ⊆ repoVersions R m) :
+    (hne : Δ.NonEmpty)
+    (hsub : Δ.DependeesExist R) :
     vfReduce R (liftVFDeps R Δ) = Δ := by
   ext ⟨p, m, vs⟩
   simp only [vfReduce, liftVFDeps, Finset.mem_image]

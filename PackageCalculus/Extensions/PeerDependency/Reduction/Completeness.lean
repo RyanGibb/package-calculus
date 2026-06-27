@@ -79,7 +79,7 @@ theorem peer_completeness
     (S_Θ : Finset (Package N V))
     (π : Finset (Package N V × Package N V))
     (hres : IsPeerResolution R_C Δ_C Θ g r S_Θ π)
-    (hfunc : ∀ p m vs₁ vs₂, (p, m, vs₁) ∈ Δ_C → (p, m, vs₂) ∈ Δ_C → vs₁ = vs₂) :
+    (hfunc : Δ_C.FunctionalInName) :
     IsResolution (peerReal R_C Δ_C Θ g) (peerDeps Δ_C Θ g)
       (Concurrent.embedPkg g r) (completenessWitness S_Θ π Δ_C g) := by
   have hconc := hres.concurrent

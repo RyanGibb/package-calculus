@@ -16,8 +16,8 @@ theorem liftResolution_soundness
     (S' : Finset (Package N' V'))
     (hres : IsResolution (concurrentReal R_C Δ_C g) (concurrentDeps Δ_C g)
       (embedPkg g r) S')
-    (hfunc : ∀ p m vs₁ vs₂, (p, m, vs₁) ∈ Δ_C → (p, m, vs₂) ∈ Δ_C → vs₁ = vs₂)
-    (hne_dep : ∀ p m vs, (p, m, vs) ∈ Δ_C → vs.Nonempty) :
+    (hfunc : Δ_C.FunctionalInName)
+    (hne_dep : Δ_C.NonEmpty) :
     ∃ π, IsConcurrentResolution R_C Δ_C g r (liftResolution g S') π := by
   have hsound := concurrent_soundness R_C Δ_C g r S' hres hfunc hne_dep
   -- The preimageS used internally equals our liftResolution extensionally

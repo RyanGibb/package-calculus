@@ -69,7 +69,7 @@ theorem virtual_completeness
     (S_v : Finset (Package N V))
     (rho : Finset (Package N V × N × Package N V))
     (hres : IsVirtualResolution R_v Delta_v prov r S_v rho)
-    (hfunc : ∀ p n vs₁ vs₂, (p, n, vs₁) ∈ Delta_v → (p, n, vs₂) ∈ Delta_v → vs₁ = vs₂) :
+    (hfunc : Delta_v.FunctionalInName) :
     IsResolution (virtualReal R_v Delta_v prov) (virtualDeps Delta_v R_v prov)
       (embedPkg r) (completenessWitness Delta_v prov S_v rho) := by
   -- Helper: selectorVersion ∈ selectorVersions

@@ -83,7 +83,7 @@ theorem concurrent_completeness
     (S_C : Finset (Package N V))
     (π : Finset (Package N V × Package N V))
     (hres : IsConcurrentResolution R_C Δ_C g r S_C π)
-    (hfunc : ∀ p m vs₁ vs₂, (p, m, vs₁) ∈ Δ_C → (p, m, vs₂) ∈ Δ_C → vs₁ = vs₂) :
+    (hfunc : Δ_C.FunctionalInName) :
     IsResolution (concurrentReal R_C Δ_C g) (concurrentDeps Δ_C g)
       (embedPkg g r) (completenessWitness S_C π Δ_C g) := by
   refine ⟨?_, ?_, ?_, ?_⟩

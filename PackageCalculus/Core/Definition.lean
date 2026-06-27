@@ -1,4 +1,5 @@
 import Mathlib.Data.Finset.Basic
+import Mathlib.Data.Finset.Image
 
 /-! # Core dependency calculus
 
@@ -23,6 +24,23 @@ variable {N V}
 
 def VersionUnique (S : Finset (Package N V)) : Prop :=
   ∀ n : N, ∀ v v' : V, (n, v) ∈ S → (n, v') ∈ S → v = v'
+
+/-- Every dependency in `Δ` admits at least one compatible version. -/
+def DepRel.NonEmpty (Δ : DepRel N V) : Prop :=
+  ∀ p n vs, (p, n, vs) ∈ Δ → vs.Nonempty
+
+/-- A package depends on a given name with at most one compatible version set. -/
+def DepRel.FunctionalInName (Δ : DepRel N V) : Prop :=
+  ∀ p n vs₁ vs₂, (p, n, vs₁) ∈ Δ → (p, n, vs₂) ∈ Δ → vs₁ = vs₂
+
+/-- The versions of name `m` available in `R`. -/
+def repoVersions (R : Real N V) (m : N) : Finset V :=
+  (R.filter (fun p => p.1 = m)).image Prod.snd
+
+/-- *Dependees Exist*: every compatible version set in `Δ`
+refers only to versions actually available in the repository `R`. -/
+def DepRel.DependeesExist (R : Real N V) (Δ : DepRel N V) : Prop :=
+  ∀ p n vs, (p, n, vs) ∈ Δ → vs ⊆ repoVersions R n
 
 /-- S ∈ S(Δ, r): a resolution for dependencies Δ and root r within R. -/
 structure IsResolution (R : Real N V) (Δ : DepRel N V)

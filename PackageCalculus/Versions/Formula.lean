@@ -38,10 +38,6 @@ def VersionFormula.eval [LT V] [DecidableRel (· < · : V → V → Prop)]
 abbrev VFDepRel (N V : Type*) [DecidableEq N] [DecidableEq V] :=
   Finset (Package N V × N × VersionFormula V)
 
-/-- The versions of name `m` available in `R`. -/
-def repoVersions (R : Real N V) (m : N) : Finset V :=
-  (R.filter (fun p => p.1 = m)).image Prod.snd
-
 /-- Like IsResolution but dependency closure uses formula semantics. -/
 structure IsVFResolution [LT V] [DecidableRel (· < · : V → V → Prop)]
     (R : Real N V)

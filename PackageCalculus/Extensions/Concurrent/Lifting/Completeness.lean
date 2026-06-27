@@ -40,7 +40,7 @@ theorem liftResolution_completeness
     (S_C : Finset (Package N V))
     (π : Finset (Package N V × Package N V))
     (hres : IsConcurrentResolution R_C Δ_C g r S_C π)
-    (hfunc : ∀ p m vs₁ vs₂, (p, m, vs₁) ∈ Δ_C → (p, m, vs₂) ∈ Δ_C → vs₁ = vs₂) :
+    (hfunc : Δ_C.FunctionalInName) :
     ∃ S', IsResolution (concurrentReal R_C Δ_C g) (concurrentDeps Δ_C g)
       (embedPkg g r) S' ∧ liftResolution g S' = S_C :=
   ⟨completenessWitness S_C π Δ_C g,

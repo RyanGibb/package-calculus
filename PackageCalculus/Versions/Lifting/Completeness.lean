@@ -13,8 +13,8 @@ variable {N : Type*} [DecidableEq N]
     the original concrete `Δ`. -/
 theorem liftResolution_completeness [LinearOrder V]
     (R : Real N V) (Δ : DepRel N V) (r : Package N V) (S : Finset (Package N V))
-    (hne : ∀ p m vs, (p, m, vs) ∈ Δ → vs.Nonempty)
-    (hsub : ∀ p m vs, (p, m, vs) ∈ Δ → vs ⊆ repoVersions R m)
+    (hne : Δ.NonEmpty)
+    (hsub : Δ.DependeesExist R)
     (hres : IsVFResolution R (liftVFDeps R Δ) r S) :
     IsResolution R Δ r S := by
   rw [← liftVFDeps_vfReduce R Δ hne hsub]
