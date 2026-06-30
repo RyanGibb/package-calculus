@@ -81,9 +81,11 @@ private theorem embedPkg_mem_peerReal {g : V → G} {p : Package N V}
     simp only [Finset.mem_filter] at hmem
     obtain ⟨u_peer, _, ⟨theta_entry, ⟨hΘ, _⟩, hmem'⟩⟩ := hmem
     obtain ⟨_, m_peer, ws_peer⟩ := theta_entry
-    simp only [Concurrent.embedPkg, Prod.mk.injEq] at hmem'
-    obtain ⟨_, _, ⟨h1, _⟩⟩ := hmem'
-    exact absurd h1 (hcnm.intermediateN_ne_granularN _ _ _ _ _)
+    split at hmem'
+    · simp only [Finset.mem_image, Concurrent.embedPkg, Prod.mk.injEq] at hmem'
+      obtain ⟨_, _, ⟨h1, _⟩⟩ := hmem'
+      exact absurd h1 (hcnm.intermediateN_ne_granularN _ _ _ _ _)
+    · simp at hmem'
 
 private theorem mem_peerDeps_dep2int {Δ_C : DepRel N V} {Θ : PeerRel N V} {g : V → G}
     {n : N} {v : V} {m : N} {vs : Finset V}

@@ -27,7 +27,9 @@ def peerReal (R_C : Real N V) (Delta : DepRel N V)
   (Delta.biUnion (fun ⟨⟨n, v⟩, o, us⟩ =>
     us.biUnion (fun u =>
       (Theta.filter (fun ⟨p, _, _⟩ => p = (o, u))).biUnion (fun ⟨_, m, ws⟩ =>
-        ws.image (fun w => (hcnm.intermediateN n v m, hcvr.origV w))))))
+        if Delta.filter (fun ⟨p, m', _⟩ => p = (n, v) ∧ m' = m) |>.Nonempty then
+          ws.image (fun w => (hcnm.intermediateN n v m, hcvr.origV w))
+        else ∅))))
 
 def peerDeps (Delta_C : DepRel N V) (Theta : PeerRel N V) (g : V → G) :
     DepRel N' V' :=
