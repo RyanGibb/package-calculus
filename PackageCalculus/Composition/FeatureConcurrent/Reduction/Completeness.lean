@@ -650,14 +650,14 @@ theorem concurrent_feature_completeness
     (S_CF : Finset (Package N V × Finset F))
     (π : Finset (Package N V × Package N V))
     (hres : IsConcurrentFeatureResolution R support Δ_f Δ_a g r S_CF π) :
-    ∃ S, IsResolution
+    IsResolution
       (concurrentFeatureReal R support Δ_f Δ_a g)
       (concurrentFeatureDeps R support Δ_f Δ_a g)
-      (Concurrent.embedPkg g (Feature.embedPkg F r)) S :=
-  ⟨cfCompletenessWitness (N_FC := N_FC) (V_FC := V_FC) S_CF π Δ_f Δ_a g,
-    ⟨cfComplete_subset R Δ_f Δ_a support g r S_CF π hres,
-     cfComplete_root_mem R Δ_f Δ_a support g r S_CF π hres,
-     cfComplete_dep_closure R Δ_f Δ_a support g r S_CF π hres,
-     cfComplete_version_unique R Δ_f Δ_a support g r S_CF π hres⟩⟩
+      (Concurrent.embedPkg g (Feature.embedPkg F r))
+      (cfCompletenessWitness (N_FC := N_FC) (V_FC := V_FC) S_CF π Δ_f Δ_a g) :=
+  ⟨cfComplete_subset R Δ_f Δ_a support g r S_CF π hres,
+   cfComplete_root_mem R Δ_f Δ_a support g r S_CF π hres,
+   cfComplete_dep_closure R Δ_f Δ_a support g r S_CF π hres,
+   cfComplete_version_unique R Δ_f Δ_a support g r S_CF π hres⟩
 
 end PackageCalculus.Composition

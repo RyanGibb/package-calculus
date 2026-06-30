@@ -369,16 +369,17 @@ theorem concurrent_feature_soundness
       (concurrentFeatureDeps R support Δ_f Δ_a g)
       (Concurrent.embedPkg g (Feature.embedPkg F r)) S)
     (hroot_no_support : ∀ f, (r, f) ∉ support) :
-    ∃ S_cf π, IsConcurrentFeatureResolution R support Δ_f Δ_a g r S_cf π :=
-  ⟨cfSoundnessWitnessS (N := N) (F := F) g S, cfSoundnessWitnessπ Δ_f Δ_a g S,
-    ⟨hroot_no_support,
-     cfSound_subset R support Δ_f Δ_a g r S hres,
-     cfSound_root_mem R support Δ_f Δ_a g r S hres hroot_no_support,
-     cfSound_feature_unification g S,
-     cfSound_parent_closure R support Δ_f Δ_a g r S hres,
-     cfSound_parent_closure_addl R support Δ_f Δ_a g r S hres,
-     cfSound_π_functional R support Δ_f Δ_a g r S hres,
-     cfSound_version_granularity R support Δ_f Δ_a g r S hres,
-     cfSound_support_mem R support Δ_f Δ_a g r S hres⟩⟩
+    IsConcurrentFeatureResolution R support Δ_f Δ_a g r
+      (cfSoundnessWitnessS (N := N) (F := F) g S)
+      (cfSoundnessWitnessπ Δ_f Δ_a g S) :=
+  ⟨hroot_no_support,
+   cfSound_subset R support Δ_f Δ_a g r S hres,
+   cfSound_root_mem R support Δ_f Δ_a g r S hres hroot_no_support,
+   cfSound_feature_unification g S,
+   cfSound_parent_closure R support Δ_f Δ_a g r S hres,
+   cfSound_parent_closure_addl R support Δ_f Δ_a g r S hres,
+   cfSound_π_functional R support Δ_f Δ_a g r S hres,
+   cfSound_version_granularity R support Δ_f Δ_a g r S hres,
+   cfSound_support_mem R support Δ_f Δ_a g r S hres⟩
 
 end PackageCalculus.Composition
