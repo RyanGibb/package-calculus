@@ -19,7 +19,7 @@ def satisfiesEncoding (R : Real N V) (Δ : DepRel N V)
   (∀ n v v', (n, v) ∈ R → (n, v') ∈ R → v ≠ v' → ¬(σ (n, v) ∧ σ (n, v')))
 
 omit [DecidableEq N] in
--- Paper Thm B.2 (SAT encoding soundness).
+-- Paper Thm C.2 (SAT encoding soundness).
 theorem satEncoding_soundness
     (R : Real N V) (Δ : DepRel N V) (r : Package N V)
     (σ : Package N V → Prop) [DecidablePred σ]
@@ -45,7 +45,7 @@ theorem satEncoding_soundness
   }
 
 omit [DecidableEq N] [DecidableEq V] in
--- Paper Thm B.3 (SAT encoding completeness).
+-- Paper Thm C.3 (SAT encoding completeness).
 theorem satEncoding_completeness
     (R : Real N V) (Δ : DepRel N V) (r : Package N V)
     (S : Finset (Package N V))

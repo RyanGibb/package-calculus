@@ -91,7 +91,7 @@ def soundnessWitness (σ : Var → Bool) (φ : Cls → ThreeClause Var)
 
 /-! ## Soundness -/
 
--- Paper Appendix A (3SAT reduction, soundness).
+-- Paper Appendix B (3SAT reduction, soundness).
 theorem satRed_soundness
     (φ : Cls → ThreeClause Var) (clauses : Finset Cls) (σ : Var → Bool)
     (hsat : ∀ j ∈ clauses, (φ j).satisfiedBy σ) :
@@ -133,7 +133,7 @@ private theorem extractAssignment_spec
   rw [dif_pos hex]
   exact SATRedVersion.bool.inj (huniq _ _ _ hex.choose_spec hmem)
 
--- Paper Appendix A (3SAT reduction, completeness).
+-- Paper Appendix B (3SAT reduction, completeness).
 theorem satRed_completeness
     (φ : Cls → ThreeClause Var) (clauses : Finset Cls)
     (S : Finset (Package (SATRedName Var Cls) (SATRedVersion Var)))

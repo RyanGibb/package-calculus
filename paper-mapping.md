@@ -3,7 +3,7 @@ All file paths are relative to the `PackageCalculus/` source directory.
 
 Where the paper writes structured names like `⟨n, vs⟩ ∈ N` or `⟨n, f⟩`, the Lean uses dedicated inductive name/version types and `Has*Names` / `Has*Versions` typeclasses to inject them.
 
-The paper states three standing conditions on every dependency relation (Def 3.1.2: Referents Exist, Functional in Name, Non-Empty).
+The paper states three standing conditions on every dependency relation (Def 3.1.2: Dependees Exist, Functional in Name, Non-Empty).
 In Lean these appear as explicit hypotheses on the theorems that consume them.
 
 ## 3. Modelling the Core
@@ -13,13 +13,13 @@ In Lean these appear as explicit hypotheses on the theorems that consume them.
 | Def 3.1.1 Package                            | `Real`, `Package`                                      | `Core/Definition.lean`                  |
 | Def 3.1.2 Dependency                         | `DepRel`                                               | `Core/Definition.lean`                  |
 | Def 3.1.3 Resolution                         | `IsResolution`                                         | `Core/Definition.lean`                  |
-| Thm 3.1.4 `DependencyResolution` NP-complete | see Appendix A below (`satRed_*`)                      | `Complexity/`                           |
+| Thm 3.1.4 `DependencyResolution` NP-complete | see Appendix B below (`satRed_*`)                      | `Complexity/`                           |
 | Def 3.2.1 Version Ordering                   | the `[LT V]` / `[DecidableRel (· < ·)]` order on `V`   | used throughout `Versions/Formula.lean` |
 | Def 3.2.2 Version Formula                    | `VersionFormula`, `VersionFormula.eval` (`CmpOp.eval`) | `Versions/Formula.lean`                 |
 | Def 3.2.3 Version Formula Dependency         | `VFDepRel`                                             | `Versions/Formula.lean`                 |
 | Def 3.2.4 Version Formula Resolution         | `IsVFResolution`                                       | `Versions/Formula.lean`                 |
 | Def 3.2.5 Version Formula Reduction          | `vfReduce`                                             | `Versions/Reduction/Definition.lean`    |
-| Thm 3.2.6 Correctness                        | `vfReduction_correct`                                  | `Versions/Reduction/Correctness.lean`   |
+| Thm 3.2.6 Correctness                        | `version_formula_correct`                              | `Versions/Reduction/Correctness.lean`   |
 
 ## 4. Extending the Calculus
 
@@ -72,8 +72,8 @@ In Lean these appear as explicit hypotheses on the theorems that consume them.
 | Def 4.5.2 Package Formula Dependency | `PFDepRel`                                       | `Extensions/PackageFormula/Definition.lean`             |
 | Def 4.5.3 Package Formula Resolution | `IsPFResolution`                                 | `Extensions/PackageFormula/Definition.lean`             |
 | Def 4.5.4 Package Formula Reduction  | `pfReal` / `pfDeps` (via `encode` / `encodeNNF`) | `Extensions/PackageFormula/Reduction/Definition.lean`   |
-| Thm 4.5.5 Soundness                  | `pkgFormula_soundness`                           | `Extensions/PackageFormula/Reduction/Soundness.lean`    |
-| Thm 4.5.6 Completeness               | `pkgFormula_completeness`                        | `Extensions/PackageFormula/Reduction/Completeness.lean` |
+| Thm 4.5.5 Soundness                  | `package_formula_soundness`                      | `Extensions/PackageFormula/Reduction/Soundness.lean`    |
+| Thm 4.5.6 Completeness               | `package_formula_completeness`                   | `Extensions/PackageFormula/Reduction/Completeness.lean` |
 
 ### 4.6 Variable Formulae
 
@@ -82,8 +82,8 @@ In Lean these appear as explicit hypotheses on the theorems that consume them.
 | Def 4.6.1 Variable Formula            | `Formula N V X Y` (in namespace `VarFormula`), dep. relation `VFDepRel` | `Extensions/VariableFormula/Definition.lean`             |
 | Def 4.6.2 Variable Formula Resolution | `IsVFResolution`                                                        | `Extensions/VariableFormula/Definition.lean`             |
 | Def 4.6.3 Variable Formula Reduction  | `vfReal` / `vfDeps`                                                     | `Extensions/VariableFormula/Reduction/Definition.lean`   |
-| Thm 4.6.4 Soundness                   | `varFormula_soundness`                                                  | `Extensions/VariableFormula/Reduction/Soundness.lean`    |
-| Thm 4.6.5 Completeness                | `varFormula_completeness`                                               | `Extensions/VariableFormula/Reduction/Completeness.lean` |
+| Thm 4.6.4 Soundness                   | `variable_formula_soundness`                                            | `Extensions/VariableFormula/Reduction/Soundness.lean`    |
+| Thm 4.6.5 Completeness                | `variable_formula_completeness`                                         | `Extensions/VariableFormula/Reduction/Completeness.lean` |
 
 ### 4.7 Virtual Packages
 
@@ -94,13 +94,6 @@ In Lean these appear as explicit hypotheses on the theorems that consume them.
 | Def 4.7.3 Virtual Package Reduction  | `virtualReal` / `virtualDeps` | `Extensions/Virtual/Reduction/Definition.lean`   |
 | Thm 4.7.4 Soundness                  | `virtual_soundness`           | `Extensions/Virtual/Reduction/Soundness.lean`    |
 | Thm 4.7.5 Completeness               | `virtual_completeness`        | `Extensions/Virtual/Reduction/Completeness.lean` |
-
-### 4.8 Singular Dependencies
-
-| Paper                                    | Lean                                                                    | File                       |
-| ---------------------------------------- | ----------------------------------------------------------------------- | -------------------------- |
-| Def 4.8.1 Singular Dependency            | `SingularRel`                                                           | `Extensions/Singular.lean` |
-| Def 4.8.2 Singular Dependency Resolution | `IsSingularResolution` (reduction `singularToCore`, `singular_is_core`) | `Extensions/Singular.lean` |
 
 ## 5. Interoperating Across Ecosystems
 
@@ -119,11 +112,11 @@ The per-extension retraction `lift ∘ reduce = id` claimed in §5.2 is mechanis
 `Lifting/Definition.lean` defines `lift`, `Lifting/Retraction.lean` proves the retraction, and `Lifting/{Soundness,Completeness}.lean` show `lift` carries core resolutions back to extension resolutions.
 These live under `Extensions/<Extension>/Lifting/` and `Versions/Lifting/`.
 
-## Appendix A -- `DependencyResolution` complexity
+## Appendix B -- `DependencyResolution` complexity
 
-The paper's NP-completeness result (Thm 3.1.4) is witnessed by a polynomial-time reduction from 3SAT.
-Membership in NP corresponds to the SAT encoding in Appendix B.
-In Lean we mechanise the reduction's soundness and completeness (below); the polynomial-time bound and NP-membership are established by inspection, not formalised.
+The paper's NP-completeness result (Thm 3.1.4) combines NP-hardness -- a polynomial-time reduction from 3SAT -- with NP-membership, which the paper establishes by direct polynomial-time verification of a candidate resolution (root inclusion, dependency closure, version uniqueness).
+In Lean we mechanise the reduction's soundness and completeness (below); the polynomial-time bound and the membership verification are argued by inspection in the paper, not formalised.
+The SAT encoding in Appendix C is a separate SAT-based solving method (formalised in `SATEncoding.lean`).
 
 | Paper                       | Lean                        | File                         |
 | --------------------------- | --------------------------- | ---------------------------- |
@@ -132,10 +125,17 @@ In Lean we mechanise the reduction's soundness and completeness (below); the pol
 | Reduction soundness         | `satRed_soundness`          | `Complexity/NPHardness.lean` |
 | Reduction completeness      | `satRed_completeness`       | `Complexity/NPHardness.lean` |
 
-## Appendix B -- SAT-based resolution
+## Appendix C -- SAT-based resolution
 
 | Paper                                     | Lean                       | File                          |
 | ----------------------------------------- | -------------------------- | ----------------------------- |
-| Def B.1 Package Calculus Reduction to SAT | `satisfiesEncoding`        | `Complexity/SATEncoding.lean` |
-| Thm B.2 Soundness                         | `satEncoding_soundness`    | `Complexity/SATEncoding.lean` |
-| Thm B.3 Completeness                      | `satEncoding_completeness` | `Complexity/SATEncoding.lean` |
+| Def C.1 Package Calculus Reduction to SAT | `satisfiesEncoding`        | `Complexity/SATEncoding.lean` |
+| Thm C.2 Soundness                         | `satEncoding_soundness`    | `Complexity/SATEncoding.lean` |
+| Thm C.3 Completeness                      | `satEncoding_completeness` | `Complexity/SATEncoding.lean` |
+
+## Appendix D -- Singular Dependencies
+
+| Paper                                    | Lean                                                                    | File                       |
+| ---------------------------------------- | ----------------------------------------------------------------------- | -------------------------- |
+| Def D.1 Singular Dependency              | `SingularRel`                                                           | `Extensions/Singular.lean` |
+| Def D.2 Singular Dependency Resolution   | `IsSingularResolution` (reduction `singularToCore`, `singular_is_core`) | `Extensions/Singular.lean` |
