@@ -19,8 +19,8 @@ variable {N F V G : Type*}
     `intermediate*` variants) provide the `Concurrent.HasConcurrentNames` instance for the
     feature-level name type. The Concurrent Feature reduction itself does **not** use the
     `intermediate*` constructors; they are present only so the underlying typeclass instance
-    can be defined. The new shared intermediate is `concurrentFeatureIntermediate p_n p_v n`,
-    corresponding to the paper's `⟨(p_n, p_v), n⟩`. It is parameterised by the depender's
+    can be defined. The new shared intermediate is `concurrentFeatureIntermediate n v m`,
+    corresponding to the paper's `⟨(n, v), m⟩`. It is parameterised by the depender's
     base name, its full version, and the dependee's base name. -/
 inductive FCName (N F V G : Type*) where
   | granularOrig : N → G → FCName N F V G
@@ -29,13 +29,13 @@ inductive FCName (N F V G : Type*) where
   | intermediateOrigFeatured : N → V → N → F → FCName N F V G
   | intermediateFeaturedOrig : N → F → V → N → FCName N F V G
   | intermediateFeaturedFeatured : N → F → V → N → F → FCName N F V G
-  /-- Shared intermediate `⟨(p_n, p_v), n⟩` for a Δ_f or Δ_a dep on the base
-      depender--dependee pair `((p_n, p_v), n)`. -/
+  /-- Shared intermediate `⟨(n, v), m⟩` for a Δ_f or Δ_a dep on the base
+      depender--dependee pair `((n, v), m)`. -/
   | concurrentFeatureIntermediate : N → V → N → FCName N F V G
-  /-- Per-feature secondary intermediate `⟨(p_n, p_v), n, f⟩` for a Δ_f dep, used to route the
+  /-- Per-feature secondary intermediate `⟨(n, v), m, f⟩` for a Δ_f dep, used to route the
       depender's orig package to each `f ∈ fs` feature granular of the dependee. -/
   | concurrentFeatureIntermediate_f : N → V → N → F → FCName N F V G
-  /-- Per-feature secondary intermediate `⟨(p_n, p_v), f, n, f'⟩` for a Δ_a dep, used to
+  /-- Per-feature secondary intermediate `⟨(n, v), f, m, f'⟩` for a Δ_a dep, used to
       route the depender's featured (by `f`) package to each `f' ∈ fs` feature granular of the
       dependee. -/
   | concurrentFeatureIntermediate_a : N → V → F → N → F → FCName N F V G
@@ -141,42 +141,42 @@ instance : Concurrent.HasConcurrentNames (Feature.FeatureName N F) V G (FCName N
     `intermediateN` constructors of the underlying `HasConcurrentNames` instance. -/
 class HasConcurrentFeatureIntermediate (N V F G : Type*) (N' : outParam Type*)
     [hcnm : Concurrent.HasConcurrentNames (Feature.FeatureName N F) V G N'] where
-  /-- Shared intermediate `⟨(p_n, p_v), n⟩`. -/
+  /-- Shared intermediate `⟨(n, v), m⟩`. -/
   cfIntermediateN : N → V → N → N'
-  /-- Per-feature secondary intermediate `⟨(p_n, p_v), n, f⟩` for Δ_f deps. -/
+  /-- Per-feature secondary intermediate `⟨(n, v), m, f⟩` for Δ_f deps. -/
   cfIntermediateN_f : N → V → N → F → N'
-  /-- Per-feature secondary intermediate `⟨(p_n, p_v), f, n, f'⟩` for Δ_a deps. -/
+  /-- Per-feature secondary intermediate `⟨(n, v), f, m, f'⟩` for Δ_a deps. -/
   cfIntermediateN_a : N → V → F → N → F → N'
   cfIntermediateN_injective :
-    ∀ p_n₁ p_v₁ n₁ p_n₂ p_v₂ n₂,
-      cfIntermediateN p_n₁ p_v₁ n₁ = cfIntermediateN p_n₂ p_v₂ n₂ →
-      p_n₁ = p_n₂ ∧ p_v₁ = p_v₂ ∧ n₁ = n₂
+    ∀ n₁ v₁ m₁ n₂ v₂ m₂,
+      cfIntermediateN n₁ v₁ m₁ = cfIntermediateN n₂ v₂ m₂ →
+      n₁ = n₂ ∧ v₁ = v₂ ∧ m₁ = m₂
   cfIntermediateN_f_injective :
-    ∀ p_n₁ p_v₁ n₁ f₁ p_n₂ p_v₂ n₂ f₂,
-      cfIntermediateN_f p_n₁ p_v₁ n₁ f₁ = cfIntermediateN_f p_n₂ p_v₂ n₂ f₂ →
-      p_n₁ = p_n₂ ∧ p_v₁ = p_v₂ ∧ n₁ = n₂ ∧ f₁ = f₂
+    ∀ n₁ v₁ m₁ f₁ n₂ v₂ m₂ f₂,
+      cfIntermediateN_f n₁ v₁ m₁ f₁ = cfIntermediateN_f n₂ v₂ m₂ f₂ →
+      n₁ = n₂ ∧ v₁ = v₂ ∧ m₁ = m₂ ∧ f₁ = f₂
   cfIntermediateN_a_injective :
-    ∀ p_n₁ p_v₁ f₁ n₁ f'₁ p_n₂ p_v₂ f₂ n₂ f'₂,
-      cfIntermediateN_a p_n₁ p_v₁ f₁ n₁ f'₁ = cfIntermediateN_a p_n₂ p_v₂ f₂ n₂ f'₂ →
-      p_n₁ = p_n₂ ∧ p_v₁ = p_v₂ ∧ f₁ = f₂ ∧ n₁ = n₂ ∧ f'₁ = f'₂
+    ∀ n₁ v₁ f₁ m₁ f'₁ n₂ v₂ f₂ m₂ f'₂,
+      cfIntermediateN_a n₁ v₁ f₁ m₁ f'₁ = cfIntermediateN_a n₂ v₂ f₂ m₂ f'₂ →
+      n₁ = n₂ ∧ v₁ = v₂ ∧ f₁ = f₂ ∧ m₁ = m₂ ∧ f'₁ = f'₂
   cfIntermediateN_ne_granularN :
-    ∀ p_n p_v n fn g, cfIntermediateN p_n p_v n ≠ hcnm.granularN fn g
+    ∀ n v m fn g, cfIntermediateN n v m ≠ hcnm.granularN fn g
   cfIntermediateN_ne_intermediateN :
-    ∀ p_n p_v n fn v fm, cfIntermediateN p_n p_v n ≠ hcnm.intermediateN fn v fm
+    ∀ n v m fn w fm, cfIntermediateN n v m ≠ hcnm.intermediateN fn w fm
   cfIntermediateN_f_ne_granularN :
-    ∀ p_n p_v n f fn g, cfIntermediateN_f p_n p_v n f ≠ hcnm.granularN fn g
+    ∀ n v m f fn g, cfIntermediateN_f n v m f ≠ hcnm.granularN fn g
   cfIntermediateN_f_ne_intermediateN :
-    ∀ p_n p_v n f fn v fm, cfIntermediateN_f p_n p_v n f ≠ hcnm.intermediateN fn v fm
+    ∀ n v m f fn w fm, cfIntermediateN_f n v m f ≠ hcnm.intermediateN fn w fm
   cfIntermediateN_f_ne_cfIntermediateN :
-    ∀ p_n p_v n f p_n' p_v' n', cfIntermediateN_f p_n p_v n f ≠ cfIntermediateN p_n' p_v' n'
+    ∀ n v m f n' v' m', cfIntermediateN_f n v m f ≠ cfIntermediateN n' v' m'
   cfIntermediateN_a_ne_granularN :
-    ∀ p_n p_v f n f' fn g, cfIntermediateN_a p_n p_v f n f' ≠ hcnm.granularN fn g
+    ∀ n v f m f' fn g, cfIntermediateN_a n v f m f' ≠ hcnm.granularN fn g
   cfIntermediateN_a_ne_intermediateN :
-    ∀ p_n p_v f n f' fn v fm, cfIntermediateN_a p_n p_v f n f' ≠ hcnm.intermediateN fn v fm
+    ∀ n v f m f' fn w fm, cfIntermediateN_a n v f m f' ≠ hcnm.intermediateN fn w fm
   cfIntermediateN_a_ne_cfIntermediateN :
-    ∀ p_n p_v f n f' p_n' p_v' n', cfIntermediateN_a p_n p_v f n f' ≠ cfIntermediateN p_n' p_v' n'
+    ∀ n v f m f' n' v' m', cfIntermediateN_a n v f m f' ≠ cfIntermediateN n' v' m'
   cfIntermediateN_a_ne_cfIntermediateN_f :
-    ∀ p_n p_v f n f' p_n' p_v' n' f'', cfIntermediateN_a p_n p_v f n f' ≠ cfIntermediateN_f p_n' p_v' n' f''
+    ∀ n v f m f' n' v' m' f'', cfIntermediateN_a n v f m f' ≠ cfIntermediateN_f n' v' m' f''
 
 attribute [simp]
   HasConcurrentFeatureIntermediate.cfIntermediateN_ne_granularN
@@ -190,38 +190,38 @@ attribute [simp]
   HasConcurrentFeatureIntermediate.cfIntermediateN_a_ne_cfIntermediateN_f
 
 instance : HasConcurrentFeatureIntermediate N V F G (FCName N F V G) where
-  cfIntermediateN := fun p_n p_v n => .concurrentFeatureIntermediate p_n p_v n
-  cfIntermediateN_f := fun p_n p_v n f => .concurrentFeatureIntermediate_f p_n p_v n f
-  cfIntermediateN_a := fun p_n p_v f n f' => .concurrentFeatureIntermediate_a p_n p_v f n f'
+  cfIntermediateN := fun n v m => .concurrentFeatureIntermediate n v m
+  cfIntermediateN_f := fun n v m f => .concurrentFeatureIntermediate_f n v m f
+  cfIntermediateN_a := fun n v f m f' => .concurrentFeatureIntermediate_a n v f m f'
   cfIntermediateN_injective := by
-    intro p_n₁ p_v₁ n₁ p_n₂ p_v₂ n₂ h
+    intro n₁ v₁ m₁ n₂ v₂ m₂ h
     have h' := FCName.concurrentFeatureIntermediate.inj h
     exact ⟨h'.1, h'.2.1, h'.2.2⟩
   cfIntermediateN_f_injective := by
-    intro p_n₁ p_v₁ n₁ f₁ p_n₂ p_v₂ n₂ f₂ h
+    intro n₁ v₁ m₁ f₁ n₂ v₂ m₂ f₂ h
     have h' := FCName.concurrentFeatureIntermediate_f.inj h
     exact ⟨h'.1, h'.2.1, h'.2.2.1, h'.2.2.2⟩
   cfIntermediateN_a_injective := by
-    intro p_n₁ p_v₁ f₁ n₁ f'₁ p_n₂ p_v₂ f₂ n₂ f'₂ h
+    intro n₁ v₁ f₁ m₁ f'₁ n₂ v₂ f₂ m₂ f'₂ h
     have h' := FCName.concurrentFeatureIntermediate_a.inj h
     exact ⟨h'.1, h'.2.1, h'.2.2.1, h'.2.2.2.1, h'.2.2.2.2⟩
   cfIntermediateN_ne_granularN := by
-    intro p_n p_v n fn g; cases fn <;> nofun
+    intro n v m fn g; cases fn <;> nofun
   cfIntermediateN_ne_intermediateN := by
-    intro p_n p_v n fn v fm; cases fn <;> cases fm <;> nofun
+    intro n v m fn w fm; cases fn <;> cases fm <;> nofun
   cfIntermediateN_f_ne_granularN := by
-    intro p_n p_v n f fn g; cases fn <;> nofun
+    intro n v m f fn g; cases fn <;> nofun
   cfIntermediateN_f_ne_intermediateN := by
-    intro p_n p_v n f fn v fm; cases fn <;> cases fm <;> nofun
+    intro n v m f fn w fm; cases fn <;> cases fm <;> nofun
   cfIntermediateN_f_ne_cfIntermediateN := by
-    intro p_n p_v n f p_n' p_v' n'; nofun
+    intro n v m f n' v' m'; nofun
   cfIntermediateN_a_ne_granularN := by
-    intro p_n p_v f n f' fn g; cases fn <;> nofun
+    intro n v f m f' fn g; cases fn <;> nofun
   cfIntermediateN_a_ne_intermediateN := by
-    intro p_n p_v f n f' fn v fm; cases fn <;> cases fm <;> nofun
+    intro n v f m f' fn w fm; cases fn <;> cases fm <;> nofun
   cfIntermediateN_a_ne_cfIntermediateN := by
-    intro p_n p_v f n f' p_n' p_v' n'; nofun
+    intro n v f m f' n' v' m'; nofun
   cfIntermediateN_a_ne_cfIntermediateN_f := by
-    intro p_n p_v f n f' p_n' p_v' n' f''; nofun
+    intro n v f m f' n' v' m' f''; nofun
 
 end PackageCalculus.Composition

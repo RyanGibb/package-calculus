@@ -52,24 +52,24 @@ noncomputable def cfSoundnessWitnessS [Fintype F] (g : V → G)
       ((n, v), Finset.univ.filter (fun f =>
         (hcnm.granularN (Feature.FeatureName.featured n f) (g v), hcvr.origV v) ∈ S)))
 
-/-- Soundness witness `π`. Extracts `((n, v), (p_n, p_v))` entries from the shared
+/-- Soundness witness `π`. Extracts `((m, u), (n, v))` entries from the shared
     intermediate constructor: each cfIntermediate package present in `S` records a single
-    parent relationship `((n, v), (p_n, p_v))`. -/
+    parent relationship `((m, u), (n, v))`. -/
 def cfSoundnessWitnessπ
     (Δ_f : Feature.FeatDepRel N V F) (Δ_a : Feature.AddlDepRel N V F)
     (g : V → G) (S : Finset (Package N_FC V_FC)) :
     Finset (Package N V × Package N V) :=
-  -- For each Δ_f entry, gather versions v ∈ vs where the shared intermediate witnesses S.
-  Δ_f.biUnion (fun ⟨⟨p_n, p_v⟩, n, vs, _⟩ =>
-    (vs.filter (fun v =>
-      (hcfi.cfIntermediateN p_n p_v n, hcvr.origV v) ∈ S ∧
-      (hcnm.granularN (Feature.FeatureName.orig n) (g v), hcvr.origV v) ∈ S)).image
-      (fun v => ((n, v), (p_n, p_v)))) ∪
-  Δ_a.biUnion (fun ⟨⟨⟨p_n, p_v⟩, _⟩, n, vs, _⟩ =>
-    (vs.filter (fun v =>
-      (hcfi.cfIntermediateN p_n p_v n, hcvr.origV v) ∈ S ∧
-      (hcnm.granularN (Feature.FeatureName.orig n) (g v), hcvr.origV v) ∈ S)).image
-      (fun v => ((n, v), (p_n, p_v))))
+  -- For each Δ_f entry, gather versions u ∈ vs where the shared intermediate witnesses S.
+  Δ_f.biUnion (fun ⟨⟨n, v⟩, m, vs, _⟩ =>
+    (vs.filter (fun u =>
+      (hcfi.cfIntermediateN n v m, hcvr.origV u) ∈ S ∧
+      (hcnm.granularN (Feature.FeatureName.orig m) (g u), hcvr.origV u) ∈ S)).image
+      (fun u => ((m, u), (n, v)))) ∪
+  Δ_a.biUnion (fun ⟨⟨⟨n, v⟩, _⟩, m, vs, _⟩ =>
+    (vs.filter (fun u =>
+      (hcfi.cfIntermediateN n v m, hcvr.origV u) ∈ S ∧
+      (hcnm.granularN (Feature.FeatureName.orig m) (g u), hcvr.origV u) ∈ S)).image
+      (fun u => ((m, u), (n, v))))
 
 /-! ### Witness Membership Helpers -/
 
@@ -96,56 +96,56 @@ theorem mem_cfSoundnessWitnessπ {Δ_f : Feature.FeatDepRel N V F}
     {Δ_a : Feature.AddlDepRel N V F} {g : V → G}
     {S : Finset (Package N_FC V_FC)} {pair : Package N V × Package N V}
     (h : pair ∈ cfSoundnessWitnessπ Δ_f Δ_a g S) :
-    (∃ p_n p_v n vs fs v, ((p_n, p_v), n, vs, fs) ∈ Δ_f ∧ v ∈ vs ∧
-      (hcfi.cfIntermediateN p_n p_v n, hcvr.origV v) ∈ S ∧
-      (hcnm.granularN (Feature.FeatureName.orig n) (g v), hcvr.origV v) ∈ S ∧
-      pair = ((n, v), (p_n, p_v))) ∨
-    (∃ p_n p_v f n vs fs v, (((p_n, p_v), f), n, vs, fs) ∈ Δ_a ∧ v ∈ vs ∧
-      (hcfi.cfIntermediateN p_n p_v n, hcvr.origV v) ∈ S ∧
-      (hcnm.granularN (Feature.FeatureName.orig n) (g v), hcvr.origV v) ∈ S ∧
-      pair = ((n, v), (p_n, p_v))) := by
+    (∃ n v m vs fs u, ((n, v), m, vs, fs) ∈ Δ_f ∧ u ∈ vs ∧
+      (hcfi.cfIntermediateN n v m, hcvr.origV u) ∈ S ∧
+      (hcnm.granularN (Feature.FeatureName.orig m) (g u), hcvr.origV u) ∈ S ∧
+      pair = ((m, u), (n, v))) ∨
+    (∃ n v f m vs fs u, (((n, v), f), m, vs, fs) ∈ Δ_a ∧ u ∈ vs ∧
+      (hcfi.cfIntermediateN n v m, hcvr.origV u) ∈ S ∧
+      (hcnm.granularN (Feature.FeatureName.orig m) (g u), hcvr.origV u) ∈ S ∧
+      pair = ((m, u), (n, v))) := by
   simp only [cfSoundnessWitnessπ, Finset.mem_union, Finset.mem_biUnion, Finset.mem_image,
     Finset.mem_filter] at h
-  rcases h with ⟨⟨⟨p_n, p_v⟩, n, vs, fs⟩, hdep, v, ⟨hv, h1, h2⟩, rfl⟩ |
-    ⟨⟨⟨⟨p_n, p_v⟩, f⟩, n, vs, fs⟩, hdep, v, ⟨hv, h1, h2⟩, rfl⟩
-  · left; exact ⟨p_n, p_v, n, vs, fs, v, hdep, hv, h1, h2, rfl⟩
-  · right; exact ⟨p_n, p_v, f, n, vs, fs, v, hdep, hv, h1, h2, rfl⟩
+  rcases h with ⟨⟨⟨n, v⟩, m, vs, fs⟩, hdep, u, ⟨hv, h1, h2⟩, rfl⟩ |
+    ⟨⟨⟨⟨n, v⟩, f⟩, m, vs, fs⟩, hdep, u, ⟨hv, h1, h2⟩, rfl⟩
+  · left; exact ⟨n, v, m, vs, fs, u, hdep, hv, h1, h2, rfl⟩
+  · right; exact ⟨n, v, f, m, vs, fs, u, hdep, hv, h1, h2, rfl⟩
 
 theorem mem_cfSoundnessWitnessπ_f {Δ_f : Feature.FeatDepRel N V F}
     {Δ_a : Feature.AddlDepRel N V F} {g : V → G}
     {S : Finset (Package N_FC V_FC)}
-    {p_n : N} {p_v : V} {n : N} {vs : Finset V} {fs : Finset F} {v : V}
-    (hdep : ((p_n, p_v), n, vs, fs) ∈ Δ_f) (hv : v ∈ vs)
-    (h1 : (hcfi.cfIntermediateN p_n p_v n, hcvr.origV v) ∈ S)
-    (h2 : (hcnm.granularN (Feature.FeatureName.orig n) (g v), hcvr.origV v) ∈ S) :
-    ((n, v), (p_n, p_v)) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S := by
+    {n : N} {v : V} {m : N} {vs : Finset V} {fs : Finset F} {u : V}
+    (hdep : ((n, v), m, vs, fs) ∈ Δ_f) (hv : u ∈ vs)
+    (h1 : (hcfi.cfIntermediateN n v m, hcvr.origV u) ∈ S)
+    (h2 : (hcnm.granularN (Feature.FeatureName.orig m) (g u), hcvr.origV u) ∈ S) :
+    ((m, u), (n, v)) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S := by
   simp only [cfSoundnessWitnessπ, Finset.mem_union, Finset.mem_biUnion, Finset.mem_image,
     Finset.mem_filter]
   left
-  exact ⟨⟨⟨p_n, p_v⟩, n, vs, fs⟩, hdep, v, ⟨hv, h1, h2⟩, rfl⟩
+  exact ⟨⟨⟨n, v⟩, m, vs, fs⟩, hdep, u, ⟨hv, h1, h2⟩, rfl⟩
 
 theorem mem_cfSoundnessWitnessπ_a {Δ_f : Feature.FeatDepRel N V F}
     {Δ_a : Feature.AddlDepRel N V F} {g : V → G}
     {S : Finset (Package N_FC V_FC)}
-    {p_n : N} {p_v : V} {f : F} {n : N} {vs : Finset V} {fs : Finset F} {v : V}
-    (hdep : (((p_n, p_v), f), n, vs, fs) ∈ Δ_a) (hv : v ∈ vs)
-    (h1 : (hcfi.cfIntermediateN p_n p_v n, hcvr.origV v) ∈ S)
-    (h2 : (hcnm.granularN (Feature.FeatureName.orig n) (g v), hcvr.origV v) ∈ S) :
-    ((n, v), (p_n, p_v)) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S := by
+    {n : N} {v : V} {f : F} {m : N} {vs : Finset V} {fs : Finset F} {u : V}
+    (hdep : (((n, v), f), m, vs, fs) ∈ Δ_a) (hv : u ∈ vs)
+    (h1 : (hcfi.cfIntermediateN n v m, hcvr.origV u) ∈ S)
+    (h2 : (hcnm.granularN (Feature.FeatureName.orig m) (g u), hcvr.origV u) ∈ S) :
+    ((m, u), (n, v)) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S := by
   simp only [cfSoundnessWitnessπ, Finset.mem_union, Finset.mem_biUnion, Finset.mem_image,
     Finset.mem_filter]
   right
-  exact ⟨⟨⟨⟨p_n, p_v⟩, f⟩, n, vs, fs⟩, hdep, v, ⟨hv, h1, h2⟩, rfl⟩
+  exact ⟨⟨⟨⟨n, v⟩, f⟩, m, vs, fs⟩, hdep, u, ⟨hv, h1, h2⟩, rfl⟩
 
 /-- Every π edge puts the corresponding shared intermediate in `S`. -/
 theorem cfSoundnessWitnessπ_inter_mem {Δ_f : Feature.FeatDepRel N V F}
     {Δ_a : Feature.AddlDepRel N V F} {g : V → G}
-    {S : Finset (Package N_FC V_FC)} {n : N} {v : V} {p_n : N} {p_v : V}
-    (h : ((n, v), (p_n, p_v)) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S) :
-    (hcfi.cfIntermediateN p_n p_v n, hcvr.origV v) ∈ S := by
+    {S : Finset (Package N_FC V_FC)} {m : N} {u : V} {n : N} {v : V}
+    (h : ((m, u), (n, v)) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S) :
+    (hcfi.cfIntermediateN n v m, hcvr.origV u) ∈ S := by
   rcases mem_cfSoundnessWitnessπ h with
-    ⟨p_n', p_v', n', vs, fs, v₀, _, _, h_inter, _, h_eq⟩
-    | ⟨p_n', p_v', f, n', vs, fs, v₀, _, _, h_inter, _, h_eq⟩
+    ⟨n', v', m', vs, fs, v₀, _, _, h_inter, _, h_eq⟩
+    | ⟨n', v', f, m', vs, fs, v₀, _, _, h_inter, _, h_eq⟩
   all_goals
     simp only [Prod.mk.injEq] at h_eq
     obtain ⟨⟨hn, hv⟩, hpn, hpv⟩ := h_eq
@@ -213,27 +213,27 @@ theorem cfSound_feature_unification :
 omit hroot_no_support in
 theorem cfSound_parent_closure :
     ∀ p fs_p, (p, fs_p) ∈ cfSoundnessWitnessS (N := N) (F := F) g S →
-    ∀ n vs fs, (p, n, vs, fs) ∈ Δ_f →
-    ∃! v, v ∈ vs ∧
-      (∃ fs', fs ⊆ fs' ∧ ((n, v), fs') ∈ cfSoundnessWitnessS (N := N) (F := F) g S) ∧
-      ((n, v), p) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S := by
-        intro p fs_p hp n vs fs hdep
-        obtain ⟨p_n, p_v, h_p, h_pn⟩ :
-            ∃ p_n p_v, p = (p_n, p_v) ∧
-              (hcnm.granularN (.orig p_n) (g p_v), hcvr.origV p_v) ∈ S := by
+    ∀ m vs fs, (p, m, vs, fs) ∈ Δ_f →
+    ∃! u, u ∈ vs ∧
+      (∃ fs', fs ⊆ fs' ∧ ((m, u), fs') ∈ cfSoundnessWitnessS (N := N) (F := F) g S) ∧
+      ((m, u), p) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S := by
+        intro p fs_p hp m vs fs hdep
+        obtain ⟨n, v, h_p, h_pn⟩ :
+            ∃ n v, p = (n, v) ∧
+              (hcnm.granularN (.orig n) (g v), hcvr.origV v) ∈ S := by
           obtain ⟨pn, pv, hpn_S, hp_eq⟩ := mem_cfSoundnessWitnessS hp
           simp only [Prod.mk.injEq] at hp_eq
           exact ⟨pn, pv, hp_eq.1, hpn_S⟩
         subst h_p
         -- By hres.dep_closure on depender's orig → shared intermediate, get v_fc ∈ vs.map origV
-        -- with (cfIntermediateN p_n p_v n, v_fc) ∈ S.
+        -- with (cfIntermediateN n v m, v_fc) ∈ S.
         obtain ⟨v_fc, hv_fc_mem, hv_fc_S⟩ :
             ∃ v_fc ∈ vs.map hcvr.origV,
-              (hcfi.cfIntermediateN p_n p_v n, v_fc) ∈ S :=
+              (hcfi.cfIntermediateN n v m, v_fc) ∈ S :=
           hres.dep_closure _ h_pn _ _ (mem_cfDeps_f_depToInter hdep)
         obtain ⟨v₀, hv₀_vs, rfl⟩ := Finset.mem_map.mp hv_fc_mem
-        -- Also need (granularN orig n (g v₀), origV v₀) ∈ S via intermediate→orig dep_closure.
-        have h_orig_S : (hcnm.granularN (Feature.FeatureName.orig n) (g v₀), hcvr.origV v₀) ∈ S := by
+        -- Also need (granularN orig m (g v₀), origV v₀) ∈ S via intermediate→orig dep_closure.
+        have h_orig_S : (hcnm.granularN (Feature.FeatureName.orig m) (g v₀), hcvr.origV v₀) ∈ S := by
           simpa using hres.dep_closure _ hv_fc_S _ _ (mem_cfDeps_f_interToOrig hdep hv₀_vs)
         refine ⟨v₀, ⟨hv₀_vs, ⟨_, ?_, mem_cfSoundnessWitnessS_of h_orig_S⟩,
           mem_cfSoundnessWitnessπ_f hdep hv₀_vs hv_fc_S h_orig_S⟩, ?_⟩
@@ -245,7 +245,7 @@ theorem cfSound_parent_closure :
             hres.dep_closure _ h_pn _ _ (mem_cfDeps_f_depToInterFeat hdep hf)
           obtain ⟨v_f, hv_f_vs, rfl⟩ := Finset.mem_map.mp hv_f_mem
           -- back-edge: secondary at v_f → shared at v_f.
-          have hshared_v_f_S : (hcfi.cfIntermediateN p_n p_v n, hcvr.origV v_f) ∈ S := by
+          have hshared_v_f_S : (hcfi.cfIntermediateN n v m, hcvr.origV v_f) ∈ S := by
             simpa using hres.dep_closure _ hv_f_S _ _ (mem_cfDeps_f_interFeatToInter hdep hv_f_vs hf)
           -- version_unique on shared intermediate: shared at v_f = shared at v₀.
           have hver : hcvr.origV v_f = hcvr.origV v₀ :=
@@ -262,16 +262,16 @@ theorem cfSound_parent_closure :
 omit hroot_no_support in
 theorem cfSound_parent_closure_addl :
     ∀ p fs_p, (p, fs_p) ∈ cfSoundnessWitnessS (N := N) (F := F) g S →
-    ∀ f ∈ fs_p, ∀ n vs fs, ((p, f), n, vs, fs) ∈ Δ_a →
-    ∃! v, v ∈ vs ∧
-      (∃ fs', fs ⊆ fs' ∧ ((n, v), fs') ∈ cfSoundnessWitnessS (N := N) (F := F) g S) ∧
-      ((n, v), p) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S := by
-        intro p fs_p hp f hf n vs fs hdep
-        -- Extract p = (p_n, p_v) along with both orig and featured packages in S.
-        obtain ⟨p_n, p_v, h_p, h_orig_pn, h_feat_pn⟩ :
-            ∃ p_n p_v, p = (p_n, p_v) ∧
-              (hcnm.granularN (Feature.FeatureName.orig p_n) (g p_v), hcvr.origV p_v) ∈ S ∧
-              (hcnm.granularN (Feature.FeatureName.featured p_n f) (g p_v), hcvr.origV p_v) ∈ S := by
+    ∀ f ∈ fs_p, ∀ m vs fs, ((p, f), m, vs, fs) ∈ Δ_a →
+    ∃! u, u ∈ vs ∧
+      (∃ fs', fs ⊆ fs' ∧ ((m, u), fs') ∈ cfSoundnessWitnessS (N := N) (F := F) g S) ∧
+      ((m, u), p) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S := by
+        intro p fs_p hp f hf m vs fs hdep
+        -- Extract p = (n, v) along with both orig and featured packages in S.
+        obtain ⟨n, v, h_p, h_orig_pn, h_feat_pn⟩ :
+            ∃ n v, p = (n, v) ∧
+              (hcnm.granularN (Feature.FeatureName.orig n) (g v), hcvr.origV v) ∈ S ∧
+              (hcnm.granularN (Feature.FeatureName.featured n f) (g v), hcvr.origV v) ∈ S := by
           obtain ⟨pn, pv, hpn_S, hp_eq⟩ := mem_cfSoundnessWitnessS hp
           simp only [Prod.mk.injEq] at hp_eq
           have h_f_filter : f ∈ Finset.univ.filter
@@ -283,10 +283,10 @@ theorem cfSound_parent_closure_addl :
         -- By hres.dep_closure on featured depender → shared intermediate, get v₀.
         obtain ⟨v_fc, hv_fc_mem, hv_fc_S⟩ :
             ∃ v_fc ∈ vs.map hcvr.origV,
-              (hcfi.cfIntermediateN p_n p_v n, v_fc) ∈ S :=
+              (hcfi.cfIntermediateN n v m, v_fc) ∈ S :=
           hres.dep_closure _ h_feat_pn _ _ (mem_cfDeps_a_depToInter hdep)
         obtain ⟨v₀, hv₀_vs, rfl⟩ := Finset.mem_map.mp hv_fc_mem
-        have h_orig_S : (hcnm.granularN (Feature.FeatureName.orig n) (g v₀), hcvr.origV v₀) ∈ S := by
+        have h_orig_S : (hcnm.granularN (Feature.FeatureName.orig m) (g v₀), hcvr.origV v₀) ∈ S := by
           simpa using hres.dep_closure _ hv_fc_S _ _ (mem_cfDeps_a_interToOrig hdep hv₀_vs)
         refine ⟨v₀, ⟨hv₀_vs, ⟨_, ?_, mem_cfSoundnessWitnessS_of h_orig_S⟩,
           mem_cfSoundnessWitnessπ_a hdep hv₀_vs hv_fc_S h_orig_S⟩, ?_⟩
@@ -298,7 +298,7 @@ theorem cfSound_parent_closure_addl :
             hres.dep_closure _ h_feat_pn _ _ (mem_cfDeps_a_depToInterFeat hdep hf')
           obtain ⟨v_f, hv_f_vs, rfl⟩ := Finset.mem_map.mp hv_f_mem
           -- back-edge: secondary at v_f → shared at v_f.
-          have hshared_v_f_S : (hcfi.cfIntermediateN p_n p_v n, hcvr.origV v_f) ∈ S := by
+          have hshared_v_f_S : (hcfi.cfIntermediateN n v m, hcvr.origV v_f) ∈ S := by
             simpa using hres.dep_closure _ hv_f_S _ _ (mem_cfDeps_a_interFeatToInter hdep hv_f_vs hf')
           -- version_unique on shared intermediate: shared at v_f = shared at v₀.
           have hver : hcvr.origV v_f = hcvr.origV v₀ :=
@@ -313,10 +313,10 @@ theorem cfSound_parent_closure_addl :
 
 omit hroot_no_support in
 theorem cfSound_π_functional :
-    ∀ n v v' p,
-    ((n, v), p) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S →
-    ((n, v'), p) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S → v = v' := by
-  rintro n v v' ⟨p_n, p_v⟩ h1 h2
+    ∀ m u u' p,
+    ((m, u), p) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S →
+    ((m, u'), p) ∈ cfSoundnessWitnessπ Δ_f Δ_a g S → u = u' := by
+  rintro m u u' ⟨n, v⟩ h1 h2
   exact hcvr.origV.injective (hres.version_unique _ _ _
     (cfSoundnessWitnessπ_inter_mem h1) (cfSoundnessWitnessπ_inter_mem h2))
 
