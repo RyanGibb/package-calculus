@@ -412,14 +412,14 @@ private theorem sort_pairwise_lt [LinearOrder V] (s : Finset V) :
   rw [List.pairwise_iff_get]; intro i j hij; exact Finset.sortedLT_sort s hij
 
 /-- Evaluating the constructed formula against the repository gives back exactly
-    the target set. -/
+    the target set restricted to the repository. -/
 theorem finsetToFormula_eval [LinearOrder V]
-    (repo : Finset V) (target : Finset V) (hsub : target ⊆ repo) :
-    (finsetToFormula repo target).eval repo = target := by
+    (repo : Finset V) (target : Finset V) :
+    (finsetToFormula repo target).eval repo = target ∩ repo := by
   -- We prove the Set-level statement and then transfer via coe injectivity
-  suffices hset : (finsetToFormula repo target).evalSet (↑repo : Set V) = ↑target by
+  suffices hset : (finsetToFormula repo target).evalSet (↑repo : Set V) = ↑target ∩ ↑repo by
     apply Finset.coe_injective
-    rw [eval_coe]
+    rw [eval_coe, Finset.coe_inter]
     exact hset
   set sorted := repo.sort (· ≤ ·) with hsorted_def
   set Vn : Set V := ↑repo
@@ -427,7 +427,7 @@ theorem finsetToFormula_eval [LinearOrder V]
   have hmem_sort : ∀ v, v ∈ sorted ↔ v ∈ repo := fun v => Finset.mem_sort (· ≤ ·)
   -- Helper: extract formula membership from the match structure
   have fwd_extract : ∀ v, v ∈ (finsetToFormula repo target).evalSet Vn →
-      (∃ φ, φ ∈ buildRanges sorted target ∧ v ∈ φ.evalSet Vn) ∨ v ∈ target := by
+      ∃ φ, φ ∈ buildRanges sorted target ∧ v ∈ φ.evalSet Vn := by
     intro v hv_eval
     unfold finsetToFormula at hv_eval; simp only at hv_eval
     revert hv_eval
@@ -438,27 +438,24 @@ theorem finsetToFormula_eval [LinearOrder V]
       exact absurd hv_eval (Set.notMem_empty v)
     | [φ] =>
       intro hv_eval
-      left; exact ⟨φ, List.mem_cons_self, hv_eval⟩
+      exact ⟨φ, List.mem_cons_self, hv_eval⟩
     | φ :: ψ :: ψs =>
       intro hv_eval
-      left
       rw [disjoinFormulas_mem Vn v φ (ψ :: ψs)] at hv_eval
       obtain ⟨ψ', hψ', hv'⟩ := hv_eval
       exact ⟨ψ', hψ', hv'⟩
   -- Main proof
-  ext v; simp only [Finset.mem_coe]
+  ext v; simp only [Set.mem_inter_iff, Finset.mem_coe]
   constructor
-  · -- Forward: v ∈ eval → v ∈ target
+  · -- Forward: v ∈ eval → v ∈ target ∧ v ∈ repo
     intro hv_eval
-    rcases fwd_extract v hv_eval with ⟨φ, hφ, hv_φ⟩ | hv_target
-    · have hv_repo : v ∈ Vn := evalSet_subset φ Vn hv_φ
-      have hv_sorted : v ∈ sorted := (hmem_sort v).mpr (Finset.mem_coe.mp hv_repo)
-      exact buildRanges_sound sorted.length sorted le_rfl target Vn hpw_lt
-        v hv_sorted φ hφ hv_φ
-    · exact hv_target
-  · -- Backward: v ∈ target → v ∈ eval
-    intro hv_target
-    have hv_repo : v ∈ repo := hsub hv_target
+    obtain ⟨φ, hφ, hv_φ⟩ := fwd_extract v hv_eval
+    have hv_repo : v ∈ Vn := evalSet_subset φ Vn hv_φ
+    have hv_sorted : v ∈ sorted := (hmem_sort v).mpr (Finset.mem_coe.mp hv_repo)
+    exact ⟨buildRanges_sound sorted.length sorted le_rfl target Vn hpw_lt
+      v hv_sorted φ hφ hv_φ, Finset.mem_coe.mp hv_repo⟩
+  · -- Backward: v ∈ target ∧ v ∈ repo → v ∈ eval
+    rintro ⟨hv_target, hv_repo⟩
     have hv_sorted : v ∈ sorted := (hmem_sort v).mpr hv_repo
     have hv_Vn : v ∈ Vn := Finset.mem_coe.mpr hv_repo
     obtain ⟨φ, hφ, hv_φ⟩ := buildRanges_complete sorted.length sorted le_rfl target

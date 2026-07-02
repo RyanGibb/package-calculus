@@ -11,11 +11,13 @@ namespace PackageCalculus.Complexity
 
 variable {N : Type*} [DecidableEq N] {V : Type*} [DecidableEq V]
 
-/-- σ satisfies the SAT encoding of (R, Δ, r): root selected, dependency closure, at-most-one. -/
+/-- σ satisfies the SAT encoding of (R, Δ, r): root selected, dependency closure, at-most-one.
+Dependency clauses range over the real versions of each set, so that every
+clause mentions only declared variables. -/
 def satisfiesEncoding (R : Real N V) (Δ : DepRel N V)
     (r : Package N V) (σ : Package N V → Prop) : Prop :=
   σ r ∧
-  (∀ p n vs, (p, n, vs) ∈ Δ → σ p → ∃ v ∈ vs, σ (n, v)) ∧
+  (∀ p n vs, (p, n, vs) ∈ Δ → σ p → ∃ v ∈ vs, (n, v) ∈ R ∧ σ (n, v)) ∧
   (∀ n v v', (n, v) ∈ R → (n, v') ∈ R → v ≠ v' → ¬(σ (n, v) ∧ σ (n, v')))
 
 omit [DecidableEq N] in
@@ -24,7 +26,6 @@ theorem satEncoding_soundness
     (R : Real N V) (Δ : DepRel N V) (r : Package N V)
     (σ : Package N V → Prop) [DecidablePred σ]
     (hr : r ∈ R)
-    (hwf : ∀ p n vs, (p, n, vs) ∈ Δ → ∀ v ∈ vs, (n, v) ∈ R)
     (hsat : satisfiesEncoding R Δ r σ) :
     IsResolution R Δ r (R.filter (fun p => σ p)) := by
   obtain ⟨hroot, hdep, huniq⟩ := hsat
@@ -34,8 +35,8 @@ theorem satEncoding_soundness
     dep_closure := fun p hp m vs hd => by
       rw [Finset.mem_filter] at hp
       obtain ⟨_, hpσ⟩ := hp
-      obtain ⟨v, hv, hvσ⟩ := hdep p m vs hd hpσ
-      exact ⟨v, hv, Finset.mem_filter.mpr ⟨hwf p m vs hd v hv, hvσ⟩⟩
+      obtain ⟨v, hv, hvR, hvσ⟩ := hdep p m vs hd hpσ
+      exact ⟨v, hv, Finset.mem_filter.mpr ⟨hvR, hvσ⟩⟩
     version_unique := fun n v v' hv hv' => by
       rw [Finset.mem_filter] at hv hv'
       obtain ⟨hvR, hvσ⟩ := hv
@@ -51,7 +52,9 @@ theorem satEncoding_completeness
     (S : Finset (Package N V))
     (hres : IsResolution R Δ r S) :
     satisfiesEncoding R Δ r (· ∈ S) := by
-  refine ⟨hres.root_mem, fun p m vs hd hp => hres.dep_closure p hp m vs hd, ?_⟩
+  refine ⟨hres.root_mem, fun p m vs hd hp => ?_, ?_⟩
+  · obtain ⟨v, hv, hvS⟩ := hres.dep_closure p hp m vs hd
+    exact ⟨v, hv, hres.subset hvS, hvS⟩
   intro n v v' _ _ hne ⟨hv, hv'⟩
   exact hne (hres.version_unique n v v' hv hv')
 

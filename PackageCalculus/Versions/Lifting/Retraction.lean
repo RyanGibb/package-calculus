@@ -10,29 +10,32 @@ variable {N : Type*} [DecidableEq N]
 
 /-! ## Round-trip theorem -/
 
-/-- Reducing the lifted formulas gives back the original concrete deps.
-    Requires every version set to be contained in the repository. -/
-theorem liftVFDeps_vfReduce [LinearOrder V]
-    (R : Real N V) (Δ : DepRel N V)
-    (hsub : Δ.DependeesExist R) :
-    vfReduce R (liftVFDeps R Δ) = Δ := by
-  ext ⟨p, m, vs⟩
-  simp only [vfReduce, liftVFDeps, Finset.mem_image]
+/-- `v` is a version of `m` in `R` iff the package `(m, v)` is real. -/
+private theorem mem_repoVersions {R : Real N V} {m : N} {v : V} :
+    v ∈ repoVersions R m ↔ (m, v) ∈ R := by
+  simp only [repoVersions, Finset.mem_image, Finset.mem_filter]
   constructor
-  · rintro ⟨⟨p', m', φ'⟩, ⟨⟨p'', m'', vs''⟩, hmem, hlift⟩, heq⟩
-    have hsub' := hsub p'' m'' vs'' hmem
-    simp only [Prod.mk.injEq] at hlift
-    obtain ⟨rfl, rfl, rfl⟩ := hlift
-    simp only [Prod.mk.injEq] at heq
-    obtain ⟨rfl, rfl, hvs⟩ := heq
-    have heval := finsetToFormula_eval (repoVersions R m'') vs'' hsub'
-    rw [heval] at hvs
-    rw [← hvs]; exact hmem
-  · intro hmem
-    have hsub' := hsub p m vs hmem
-    refine ⟨(p, m, finsetToFormula (repoVersions R m) vs), ?_, ?_⟩
-    · exact ⟨⟨p, m, vs⟩, hmem, rfl⟩
-    · have heval := finsetToFormula_eval (repoVersions R m) vs hsub'
-      rw [heval]
+  · rintro ⟨⟨a, b⟩, ⟨hR, ha⟩, hb⟩
+    dsimp only at ha hb
+    subst ha; subst hb
+    exact hR
+  · exact fun h => ⟨(m, v), ⟨h, rfl⟩, rfl⟩
+
+private theorem inter_repoVersions (R : Real N V) (m : N) (vs : Finset V) :
+    vs ∩ repoVersions R m = vs.filter (fun v => (m, v) ∈ R) := by
+  ext v
+  simp only [Finset.mem_inter, Finset.mem_filter, mem_repoVersions]
+
+/-- Reducing the lifted formulas gives back the original concrete deps,
+    restricted to real versions. -/
+theorem liftVFDeps_vfReduce [LinearOrder V]
+    (R : Real N V) (Δ : DepRel N V) :
+    vfReduce R (liftVFDeps R Δ) = Δ.restrictReal R := by
+  unfold vfReduce liftVFDeps DepRel.restrictReal
+  rw [Finset.image_image]
+  refine Finset.image_congr fun x _ => ?_
+  obtain ⟨p, m, vs⟩ := x
+  simp only [Function.comp_apply]
+  rw [finsetToFormula_eval, inter_repoVersions]
 
 end PackageCalculus

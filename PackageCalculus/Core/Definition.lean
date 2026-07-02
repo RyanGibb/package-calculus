@@ -33,11 +33,6 @@ def DepRel.FunctionalInName (Δ : DepRel N V) : Prop :=
 def repoVersions (R : Real N V) (m : N) : Finset V :=
   (R.filter (fun p => p.1 = m)).image Prod.snd
 
-/-- *Dependees Exist*: every compatible version set in `Δ`
-refers only to versions actually available in the repository `R`. -/
-def DepRel.DependeesExist (R : Real N V) (Δ : DepRel N V) : Prop :=
-  ∀ p n vs, (p, n, vs) ∈ Δ → vs ⊆ repoVersions R n
-
 /-- S ∈ S(Δ, r): a resolution for dependencies Δ and root r within R. -/
 structure IsResolution (R : Real N V) (Δ : DepRel N V)
     (r : Package N V) (S : Finset (Package N V)) : Prop where
@@ -46,5 +41,29 @@ structure IsResolution (R : Real N V) (Δ : DepRel N V)
   dep_closure : ∀ p ∈ S, ∀ m : N, ∀ vs : Finset V,
     (p, m, vs) ∈ Δ → ∃ v ∈ vs, (m, v) ∈ S
   version_unique : VersionUnique S
+
+/-- Restrict every version set in `Δ` to versions of real packages. -/
+def DepRel.restrictReal (R : Real N V) (Δ : DepRel N V) : DepRel N V :=
+  Δ.image (fun ⟨p, n, vs⟩ => (p, n, vs.filter (fun v => (n, v) ∈ R)))
+
+/-- Restriction to real versions preserves the set of resolutions: a version
+that is not real can never be selected, since `S ⊆ R`. -/
+theorem restrictReal_resolution_iff (R : Real N V) (Δ : DepRel N V)
+    (r : Package N V) (S : Finset (Package N V)) :
+    IsResolution R (Δ.restrictReal R) r S ↔ IsResolution R Δ r S := by
+  constructor
+  · rintro ⟨hsub, hroot, hdep, huniq⟩
+    refine ⟨hsub, hroot, fun p hp m vs hmem => ?_, huniq⟩
+    obtain ⟨v, hv, hvS⟩ := hdep p hp m (vs.filter (fun v => (m, v) ∈ R))
+      (Finset.mem_image.mpr ⟨⟨p, m, vs⟩, hmem, rfl⟩)
+    exact ⟨v, (Finset.mem_filter.mp hv).1, hvS⟩
+  · rintro ⟨hsub, hroot, hdep, huniq⟩
+    refine ⟨hsub, hroot, fun p hp m vs hmem => ?_, huniq⟩
+    simp only [DepRel.restrictReal, Finset.mem_image] at hmem
+    obtain ⟨⟨p', m', vs'⟩, hmem', heq⟩ := hmem
+    simp only [Prod.mk.injEq] at heq
+    obtain ⟨rfl, rfl, rfl⟩ := heq
+    obtain ⟨v, hv, hvS⟩ := hdep p' hp m' vs' hmem'
+    exact ⟨v, Finset.mem_filter.mpr ⟨hv, hsub hvS⟩, hvS⟩
 
 end PackageCalculus

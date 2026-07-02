@@ -15,11 +15,9 @@ variable {N : Type*} [DecidableEq N]
     lifted `VFDepRel`. -/
 theorem liftResolution_soundness [LinearOrder V]
     (R : Real N V) (Δ : DepRel N V) (r : Package N V) (S : Finset (Package N V))
-    (hsub : Δ.DependeesExist R)
     (hres : IsResolution R Δ r S) :
     IsVFResolution R (liftVFDeps R Δ) r S := by
-  rw [← version_formula_correct]
-  rw [liftVFDeps_vfReduce R Δ hsub]
-  exact hres
+  rw [← version_formula_correct, liftVFDeps_vfReduce R Δ]
+  exact (restrictReal_resolution_iff R Δ r S).mpr hres
 
 end PackageCalculus
