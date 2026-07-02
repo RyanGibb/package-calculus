@@ -88,7 +88,7 @@ private theorem mem_concurrentDeps_direct {Δ_C : DepRel N V} {g : V → G}
      hcnm.granularN m (g u₀),
      vs.map hcvr.origV) ∈ concurrentDeps (N' := N') (V' := V') Δ_C g := by
   simp only [concurrentDeps, Finset.mem_union, Finset.mem_biUnion]
-  left; left
+  left; left; left
   refine ⟨⟨⟨n, v⟩, m, vs⟩, hdep, ?_⟩
   simp only
   rw [if_pos hdir]
@@ -102,7 +102,7 @@ private theorem mem_concurrentDeps_split1 {Δ_C : DepRel N V} {g : V → G}
      (vs.image (fun u => g u)).map hcvr.granV) ∈
       concurrentDeps (N' := N') (V' := V') Δ_C g := by
   simp only [concurrentDeps, Finset.mem_union, Finset.mem_biUnion]
-  left; right
+  left; left; right
   refine ⟨⟨⟨n, v⟩, m, vs⟩, hdep, ?_⟩
   simp only
   rw [if_pos hspl]
@@ -116,11 +116,22 @@ private theorem mem_concurrentDeps_split2 {Δ_C : DepRel N V} {g : V → G}
      (vs.filter (fun w => g w = g u₀)).map hcvr.origV) ∈
       concurrentDeps (N' := N') (V' := V') Δ_C g := by
   simp only [concurrentDeps, Finset.mem_union, Finset.mem_biUnion]
-  right
+  left; right
   refine ⟨⟨⟨n, v⟩, m, vs⟩, hdep, ?_⟩
   simp only
   rw [if_pos hspl]
   exact Finset.mem_image.mpr ⟨u₀, hu₀, rfl⟩
+
+private theorem mem_concurrentDeps_empty {Δ_C : DepRel N V} {g : V → G}
+    {n : N} {v : V} {m : N}
+    (hdep : ((n, v), m, (∅ : Finset V)) ∈ Δ_C) :
+    ((hcnm.granularN n (g v), hcvr.origV v),
+     hcnm.intermediateN n v m,
+     (∅ : Finset V')) ∈ concurrentDeps (N' := N') (V' := V') Δ_C g := by
+  simp only [concurrentDeps, Finset.mem_union, Finset.mem_biUnion]
+  right
+  refine ⟨⟨⟨n, v⟩, m, ∅⟩, hdep, ?_⟩
+  exact Finset.mem_singleton.mpr rfl
 
 -- Paper Thm 4.2.4 (Concurrent Reduction Soundness).
 theorem concurrent_soundness
@@ -129,8 +140,7 @@ theorem concurrent_soundness
     (S : Finset (Package N' V'))
     (hres : IsResolution (concurrentReal R_C Δ_C g) (concurrentDeps Δ_C g)
       (embedPkg g r) S)
-    (hfunc : Δ_C.FunctionalInName)
-    (hne_dep : Δ_C.NonEmpty) :
+    (hfunc : Δ_C.FunctionalInName) :
     IsConcurrentResolution R_C Δ_C g r (preimageS g S) (soundnessπ Δ_C g S) := by
   refine ⟨?_, ?_, ?_, ?_⟩
   · -- subset
@@ -143,9 +153,15 @@ theorem concurrent_soundness
   · -- parent_closure
     intro ⟨pn, pv⟩ hp m vs hdep
     rw [mem_preimageS] at hp
+    by_cases hemp : vs = ∅
+    · -- EMPTY case: the reduced instance forbids selecting the depender
+      subst hemp
+      have hd := mem_concurrentDeps_empty (N' := N') (V' := V') (g := g) hdep
+      obtain ⟨cv, hcvv, _⟩ := hres.dep_closure _ hp _ _ hd
+      exact absurd hcvv (Finset.notMem_empty cv)
     by_cases hdir : isDirect g vs
     · -- DIRECT case
-      obtain ⟨u₀, hu₀⟩ := hne_dep _ _ _ hdep
+      obtain ⟨u₀, hu₀⟩ := Finset.nonempty_iff_ne_empty.mpr hemp
       have hd := mem_concurrentDeps_direct hdep hdir hu₀
       obtain ⟨cv, hcvv, hcvS⟩ := hres.dep_closure _ hp _ _ hd
       rw [Finset.mem_map] at hcvv

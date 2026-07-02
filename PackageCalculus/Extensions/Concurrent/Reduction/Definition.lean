@@ -85,6 +85,13 @@ def concurrentDeps (Δ_C : DepRel N V) (g : V → G) :
         ((hcnm.intermediateN n v m, hcvr.granV (g u)),
          hcnm.granularN m (g u),
          (vs.filter (fun w => g w = g u)).map hcvr.origV))
+    else ∅)) ∪
+  -- Empty case: an unsatisfiable dependency reduces to an unsatisfiable dependency
+  (Δ_C.biUnion (fun ⟨⟨n, v⟩, m, vs⟩ =>
+    if vs = ∅ then
+      {((hcnm.granularN n (g v), hcvr.origV v),
+        hcnm.intermediateN n v m,
+        (∅ : Finset V'))}
     else ∅))
 
 end PackageCalculus.Concurrent

@@ -59,17 +59,15 @@ decreasing_by
   all_goals simp_wf
   all_goals (first | omega | (have := extendRange_length_le vs target v; omega))
 
-/-- Convert a non-empty `Finset V` into a `VersionFormula V` that evaluates to
-    exactly that set against the repository, via contiguous-range detection on the
-    sorted repository. -/
+/-- Convert a `Finset V` into a `VersionFormula V` that evaluates to exactly
+    that set against the repository, via contiguous-range detection on the
+    sorted repository. An empty target yields `⊥`. -/
 def finsetToFormula [LinearOrder V]
-    (repo : Finset V) (target : Finset V) (h : target.Nonempty) : VersionFormula V :=
+    (repo : Finset V) (target : Finset V) : VersionFormula V :=
   let sorted := repo.sort (· ≤ ·)
   let ranges := buildRanges sorted target
   match ranges with
-  | [] =>
-    -- fallback: pick an element from target
-    .cmp .eq (target.min' h)
+  | [] => .bot
   | [φ] => φ
   | φ :: φs => disjoinFormulas (φ :: φs)
 
@@ -94,6 +92,7 @@ private def VersionFormula.evalSet [LT V]
     (φ : VersionFormula V) (Vn : Set V) : Set V :=
   match φ with
   | .top => Vn
+  | .bot => ∅
   | .conj φ₁ φ₂ => φ₁.evalSet Vn ∩ φ₂.evalSet Vn
   | .disj φ₁ φ₂ => φ₁.evalSet Vn ∪ φ₂.evalSet Vn
   | .cmp ω c => { v ∈ Vn | ω.evalProp v c }
@@ -104,6 +103,7 @@ private theorem eval_coe [LT V] [DecidableRel (· < · : V → V → Prop)]
     ↑(φ.eval Vn) = φ.evalSet ↑Vn := by
   induction φ with
   | top => simp [VersionFormula.eval, VersionFormula.evalSet]
+  | bot => simp [VersionFormula.eval, VersionFormula.evalSet]
   | conj φ₁ φ₂ ih₁ ih₂ =>
     simp only [VersionFormula.eval, VersionFormula.evalSet, Finset.coe_inter]
     rw [ih₁, ih₂]
@@ -127,6 +127,7 @@ private theorem evalSet_subset [LT V] (φ : VersionFormula V) (Vn : Set V) :
     φ.evalSet Vn ⊆ Vn := by
   induction φ with
   | top => exact Set.Subset.refl _
+  | bot => exact Set.empty_subset _
   | conj _ _ ih₁ _ => exact Set.inter_subset_left.trans ih₁
   | disj _ _ ih₁ ih₂ => exact Set.union_subset ih₁ ih₂
   | cmp _ _ => intro v hv; exact (Set.mem_sep_iff.mp hv).1
@@ -413,10 +414,10 @@ private theorem sort_pairwise_lt [LinearOrder V] (s : Finset V) :
 /-- Evaluating the constructed formula against the repository gives back exactly
     the target set. -/
 theorem finsetToFormula_eval [LinearOrder V]
-    (repo : Finset V) (target : Finset V) (h : target.Nonempty) (hsub : target ⊆ repo) :
-    (finsetToFormula repo target h).eval repo = target := by
+    (repo : Finset V) (target : Finset V) (hsub : target ⊆ repo) :
+    (finsetToFormula repo target).eval repo = target := by
   -- We prove the Set-level statement and then transfer via coe injectivity
-  suffices hset : (finsetToFormula repo target h).evalSet (↑repo : Set V) = ↑target by
+  suffices hset : (finsetToFormula repo target).evalSet (↑repo : Set V) = ↑target by
     apply Finset.coe_injective
     rw [eval_coe]
     exact hset
@@ -425,7 +426,7 @@ theorem finsetToFormula_eval [LinearOrder V]
   have hpw_lt := sort_pairwise_lt repo
   have hmem_sort : ∀ v, v ∈ sorted ↔ v ∈ repo := fun v => Finset.mem_sort (· ≤ ·)
   -- Helper: extract formula membership from the match structure
-  have fwd_extract : ∀ v, v ∈ (finsetToFormula repo target h).evalSet Vn →
+  have fwd_extract : ∀ v, v ∈ (finsetToFormula repo target).evalSet Vn →
       (∃ φ, φ ∈ buildRanges sorted target ∧ v ∈ φ.evalSet Vn) ∨ v ∈ target := by
     intro v hv_eval
     unfold finsetToFormula at hv_eval; simp only at hv_eval
@@ -433,9 +434,8 @@ theorem finsetToFormula_eval [LinearOrder V]
     match hm : buildRanges sorted target with
     | [] =>
       intro hv_eval
-      right
-      simp only [VersionFormula.evalSet, CmpOp.evalProp, Set.mem_sep_iff] at hv_eval
-      rw [hv_eval.2]; exact Finset.min'_mem target h
+      simp only [VersionFormula.evalSet] at hv_eval
+      exact absurd hv_eval (Set.notMem_empty v)
     | [φ] =>
       intro hv_eval
       left; exact ⟨φ, List.mem_cons_self, hv_eval⟩
@@ -482,11 +482,6 @@ variable {N : Type*} [DecidableEq N]
     into a `VersionFormula` via `finsetToFormula`. Each `(p, m, vs)` becomes
     `(p, m, φ)` where `φ` evaluates to `vs` against the repository. -/
 def liftVFDeps [LinearOrder V] (R : Real N V) (Δ : DepRel N V) : VFDepRel N V :=
-  Δ.image (fun ⟨p, m, vs⟩ =>
-    if h : vs.Nonempty then
-      (p, m, finsetToFormula (repoVersions R m) vs h)
-    else
-      -- empty version set: use .top as a fallback (should not occur in practice)
-      (p, m, VersionFormula.top))
+  Δ.image (fun ⟨p, m, vs⟩ => (p, m, finsetToFormula (repoVersions R m) vs))
 
 end PackageCalculus

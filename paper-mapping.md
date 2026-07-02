@@ -3,7 +3,7 @@ All file paths are relative to the `PackageCalculus/` source directory.
 
 Where the paper writes structured names like `⟨n, vs⟩ ∈ N` or `⟨n, f⟩`, the Lean uses dedicated inductive name/version types and `Has*Names` / `Has*Versions` typeclasses to inject them.
 
-The paper states three standing conditions on every dependency relation (Def 3.1.2: Dependees Exist, Functional in Name, Non-Empty).
+The paper states two standing conditions on every dependency relation (Def 3.1.2: Dependees Exist, Functional in Name).
 In Lean these appear as explicit hypotheses on the theorems that consume them.
 
 ## 3. Modelling the Core

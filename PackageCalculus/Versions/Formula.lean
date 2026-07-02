@@ -9,6 +9,7 @@ inductive CmpOp where | ge | gt | le | lt | eq | ne deriving DecidableEq
 
 inductive VersionFormula (V : Type*) where
   | top : VersionFormula V
+  | bot : VersionFormula V
   | conj : VersionFormula V → VersionFormula V → VersionFormula V
   | disj : VersionFormula V → VersionFormula V → VersionFormula V
   | cmp : CmpOp → V → VersionFormula V
@@ -31,6 +32,7 @@ def VersionFormula.eval [LT V] [DecidableRel (· < · : V → V → Prop)]
     (φ : VersionFormula V) (Vn : Finset V) : Finset V :=
   match φ with
   | .top => Vn
+  | .bot => ∅
   | .conj φ₁ φ₂ => φ₁.eval Vn ∩ φ₂.eval Vn
   | .disj φ₁ φ₂ => φ₁.eval Vn ∪ φ₂.eval Vn
   | .cmp ω c => Vn.filter (fun v => ω.eval v c)

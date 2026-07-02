@@ -25,10 +25,6 @@ variable {N V}
 def VersionUnique (S : Finset (Package N V)) : Prop :=
   ∀ n : N, ∀ v v' : V, (n, v) ∈ S → (n, v') ∈ S → v = v'
 
-/-- Every dependency in `Δ` admits at least one compatible version. -/
-def DepRel.NonEmpty (Δ : DepRel N V) : Prop :=
-  ∀ p n vs, (p, n, vs) ∈ Δ → vs.Nonempty
-
 /-- A package depends on a given name with at most one compatible version set. -/
 def DepRel.FunctionalInName (Δ : DepRel N V) : Prop :=
   ∀ p n vs₁ vs₂, (p, n, vs₁) ∈ Δ → (p, n, vs₂) ∈ Δ → vs₁ = vs₂

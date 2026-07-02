@@ -107,7 +107,7 @@ theorem concurrent_completeness
       ⟨n, v, hmem, rfl⟩ | ⟨n, v, m, vs, u, hdep, hnv, hspl, hmu, hu, hπ, rfl⟩
     · -- granular package (granularN n (g v), origV v)
       simp only [concurrentDeps, Finset.mem_union, Finset.mem_biUnion] at hd
-      rcases hd with ((⟨a, haΔ, hmem_d⟩ | ⟨a, haΔ, hmem_d⟩) | ⟨a, haΔ, hmem_d⟩)
+      rcases hd with (((⟨a, haΔ, hmem_d⟩ | ⟨a, haΔ, hmem_d⟩) | ⟨a, haΔ, hmem_d⟩) | ⟨a, haΔ, hmem_d⟩)
       · -- direct case
         obtain ⟨⟨n', v'⟩, m', vs'⟩ := a
         simp only at hmem_d; split at hmem_d
@@ -142,9 +142,21 @@ theorem concurrent_completeness
           obtain ⟨_, _, ⟨⟨h1, _⟩, _, _⟩⟩ := hmem_d
           exact absurd h1 (hcnm.intermediateN_ne_granularN _ _ _ _ _)
         case isFalse => exact (List.mem_nil_iff _ |>.mp hmem_d).elim
+      · -- empty case: selected depender contradicts parent closure on ∅
+        obtain ⟨⟨n', v'⟩, m', vs'⟩ := a
+        simp only at hmem_d; split at hmem_d
+        case isTrue hemp =>
+          simp only [Finset.mem_singleton, Prod.mk.injEq] at hmem_d
+          obtain ⟨⟨h1, h2⟩, rfl, rfl⟩ := hmem_d
+          have ⟨h1a, _⟩ := hcnm.granularN_injective h1; subst h1a
+          have h2' := hcvr.origV.injective h2; subst h2'
+          subst hemp
+          obtain ⟨u, ⟨huv, _, _⟩, _⟩ := hres.parent_closure _ hmem _ _ haΔ
+          exact absurd huv (Finset.notMem_empty u)
+        case isFalse => exact (List.mem_nil_iff _ |>.mp hmem_d).elim
     · -- intermediate package (intermediateN n v m, granV (g u))
       simp only [concurrentDeps, Finset.mem_union, Finset.mem_biUnion] at hd
-      rcases hd with ((⟨a, haΔ, hmem_d⟩ | ⟨a, haΔ, hmem_d⟩) | ⟨a, haΔ, hmem_d⟩)
+      rcases hd with (((⟨a, haΔ, hmem_d⟩ | ⟨a, haΔ, hmem_d⟩) | ⟨a, haΔ, hmem_d⟩) | ⟨a, haΔ, hmem_d⟩)
       · -- direct case: intermediateN = granularN, contradiction
         obtain ⟨⟨n', v'⟩, m', vs'⟩ := a
         simp only at hmem_d; split at hmem_d
@@ -175,6 +187,14 @@ theorem concurrent_completeness
           refine ⟨hcvr.origV u,
             Finset.mem_map.mpr ⟨u, Finset.mem_filter.mpr ⟨hu, hgu.symm⟩, rfl⟩,
             hgu.symm ▸ mem_gran hmu⟩
+        case isFalse => exact (List.mem_nil_iff _ |>.mp hmem_d).elim
+      · -- empty case: depender is granular, name clash
+        obtain ⟨⟨n', v'⟩, m', vs'⟩ := a
+        simp only at hmem_d; split at hmem_d
+        case isTrue =>
+          simp only [Finset.mem_singleton, Prod.mk.injEq] at hmem_d
+          obtain ⟨⟨h1, _⟩, _, _⟩ := hmem_d
+          exact absurd h1 (hcnm.intermediateN_ne_granularN _ _ _ _ _)
         case isFalse => exact (List.mem_nil_iff _ |>.mp hmem_d).elim
   · -- version_unique
     intro nm cv₁ cv₂ hv₁ hv₂
