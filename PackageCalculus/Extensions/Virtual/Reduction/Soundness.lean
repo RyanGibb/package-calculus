@@ -65,7 +65,7 @@ noncomputable def soundnessRho (Delta_v : DepRel N V) (prov : ProvidesRel N V)
     (S : Finset (Package N' V')) : Finset (Package N V × N × Package N V) :=
   Delta_v.biUnion (fun ⟨p, n, vs⟩ =>
     prov.biUnion (fun ⟨q, n', v⟩ =>
-      if n' = n ∧ memTop v vs ∧
+      if n' = n ∧ memTop v vs ∧ embedPkg p ∈ S ∧
         (hvn.selectorN p n, hvv.providerV q.1 q.2) ∈ S
       then {(q, n, p)} else ∅))
 
@@ -121,7 +121,7 @@ theorem virtual_soundness
               soundnessRho Delta_v prov S := by
             simp only [soundnessRho, Finset.mem_biUnion]
             refine ⟨⟨(pn, pv), n, vs⟩, hdep, ⟨⟨(m, u), n, v⟩, hprov_mem', ?_⟩⟩
-            simp [hmemtop, hsv_S]
+            simp [hmemtop, hsv_S, hp]
           right
           refine ⟨(m, u), ⟨mem_preimageS.mpr hw_S, v, hmemtop, hprov_mem', hrho_mem⟩, ?_⟩
           intro ⟨m', u'⟩ ⟨hq'S, v', _, hprov_out, hρ⟩
@@ -132,7 +132,7 @@ theorem virtual_soundness
           obtain ⟨⟨p', n_r, vs_r⟩, hdep_r, ⟨⟨q_r, n_r', v_r⟩, hprov_mem_r, hmem_if_r⟩⟩ := hρ'
           split at hmem_if_r
           · rename_i hcond_r
-            obtain ⟨hn_r', hmemtop_r, hsel_S'⟩ := hcond_r
+            obtain ⟨hn_r', hmemtop_r, _, hsel_S'⟩ := hcond_r
             rw [Finset.mem_singleton] at hmem_if_r
             -- hmem_if_r : ((m', u'), n, (pn, pv)) = (q_r, n_r, p')
             -- From the tagged rho element we extract equalities
