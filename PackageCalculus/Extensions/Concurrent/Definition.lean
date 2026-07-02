@@ -24,6 +24,8 @@ structure IsConcurrentResolution
   /-- Same name, different version implies different granularity. -/
   version_granularity : ∀ n : N, ∀ v v' : V,
     (n, v) ∈ S → (n, v') ∈ S → v ≠ v' → g v ≠ g v'
+  /-- π ⊆ S × S: both ends of every parent edge are in the resolution. -/
+  parent_subset : ∀ c p : Package N V, (c, p) ∈ π → c ∈ S ∧ p ∈ S
 
 /-- No `orig` embedding: names are either `granular n g` or `intermediate n v m`. -/
 class HasConcurrentNames (N V G : Type*) (N' : outParam Type*) where

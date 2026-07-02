@@ -135,7 +135,7 @@ theorem peer_soundness
     (hres : IsResolution (peerReal R_C Δ_C Θ g) (peerDeps Δ_C Θ g)
       (Concurrent.embedPkg g r) S) :
     IsPeerResolution R_C Δ_C Θ g r (preimageS g S) (soundnessπ Δ_C g S) := by
-  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
+  refine ⟨⟨?_, ?_, ?_, ?_, ?_⟩, ?_⟩
   · -- subset
     intro p hp
     rw [mem_preimageS] at hp
@@ -171,9 +171,20 @@ theorem peer_soundness
     rw [mem_preimageS] at hv hv'
     exact hne (hcvr.origV.injective
       (hres.version_unique _ _ _ (hge ▸ hv) hv'))
+  · -- parent_subset
+    intro c p hcp
+    rw [mem_soundnessπ] at hcp
+    obtain ⟨n, v, m, vs, u, hdep, hvS, huv, hintS, heq⟩ := hcp
+    simp only [Prod.mk.injEq] at heq
+    obtain ⟨rfl, rfl⟩ := heq
+    refine ⟨?_, mem_preimageS.mpr hvS⟩
+    have hd2 := mem_peerDeps_int2dep (Θ := Θ) (g := g) hdep huv
+    obtain ⟨w, hw_mem, hw_S⟩ := hres.dep_closure _ hintS _ _ hd2
+    rw [Finset.mem_singleton.mp hw_mem] at hw_S
+    exact mem_preimageS.mpr hw_S
   · -- peer_satisfaction
-    intro ⟨on, ou⟩ hou m' ws' hpeer ⟨qn, qv⟩ hπ_mem us' hdep_q w hw_us hw_S hw_π
-    rw [mem_preimageS] at hou hw_S
+    intro ⟨on, ou⟩ hou m' ws' hpeer ⟨qn, qv⟩ hπ_mem us' hdep_q w hw_us hw_π
+    rw [mem_preimageS] at hou
     rw [mem_soundnessπ] at hπ_mem hw_π
     -- From ((on, ou), (qn, qv)) ∈ π
     obtain ⟨_, _, _, vs₁, _, hdep₁, _, hu₁v, hintS₁, heq₁⟩ := hπ_mem

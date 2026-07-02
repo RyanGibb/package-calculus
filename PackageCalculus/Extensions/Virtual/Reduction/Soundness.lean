@@ -77,7 +77,7 @@ theorem virtual_soundness
     (hres : IsResolution (virtualReal R_v Delta_v prov) (virtualDeps Delta_v R_v prov)
       (embedPkg r) S) :
     IsVirtualResolution R_v Delta_v prov r (preimageS S) (soundnessRho Delta_v prov S) := by
-  refine ⟨?_, ?_, ?_, ?_⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · -- subset
     intro p hp
     rw [mem_preimageS] at hp
@@ -177,5 +177,36 @@ theorem virtual_soundness
     intro n v v' hv hv'
     rw [mem_preimageS] at hv hv'
     exact hvv.origV.injective (hres.version_unique _ _ _ hv hv')
+  · -- provider_subset
+    intro ⟨m, u⟩ n ⟨pn, pv⟩ hρ
+    simp only [soundnessRho] at hρ
+    have hρ' : _ ∈ Delta_v.biUnion _ := hρ
+    simp only [Finset.mem_biUnion] at hρ'
+    obtain ⟨⟨p', n_r, vs_r⟩, hdep_r, ⟨⟨q_r, n_r', v_r⟩, hprov_r, hmem_if⟩⟩ := hρ'
+    split at hmem_if
+    · rename_i hcond
+      obtain ⟨hn_eq, hmemtop, hpS, hselS⟩ := hcond
+      rw [Finset.mem_singleton] at hmem_if
+      -- hmem_if : ((m, u), n, (pn, pv)) = (q_r, n_r, p')
+      have hq_eq : q_r = (m, u) := (Prod.mk.inj hmem_if).1.symm
+      have hp_eq : p' = (pn, pv) := (Prod.mk.inj (Prod.mk.inj hmem_if).2).2.symm
+      subst hq_eq; subst hp_eq
+      have hn_eq' : n_r' = n_r := hn_eq
+      have hmemtop' : memTop v_r vs_r := hmemtop
+      have hpS' : embedPkg (pn, pv) ∈ S := hpS
+      have hselS' : (hvn.selectorN (pn, pv) n_r, hvv.providerV m u) ∈ S := hselS
+      rw [hn_eq'] at hprov_r
+      refine ⟨?_, mem_preimageS.mpr hpS'⟩
+      have hd_prov : ((hvn.selectorN (pn, pv) n_r, hvv.providerV m u),
+          hvn.origN m, ({hvv.origV u} : Finset _)) ∈
+          virtualDeps Delta_v R_v prov := by
+        simp only [virtualDeps, Finset.mem_union, Finset.mem_biUnion]
+        left; right
+        refine ⟨⟨(pn, pv), n_r, vs_r⟩, hdep_r, ⟨⟨(m, u), n_r, v_r⟩, hprov_r, ?_⟩⟩
+        simp [hmemtop']
+      obtain ⟨w, hw_mem, hw_S⟩ := hres.dep_closure _ hselS' _ _ hd_prov
+      rw [Finset.mem_singleton.mp hw_mem] at hw_S
+      exact mem_preimageS.mpr hw_S
+    · simp at hmem_if
 
 end PackageCalculus.Virtual

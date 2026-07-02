@@ -41,6 +41,9 @@ structure IsVirtualResolution
     (∃ v ∈ vs, (n, v) ∈ S) ∨
     (∃! q, q ∈ S ∧ ∃ v, memTop v vs ∧ (q, n, v) ∈ prov ∧ (q, n, p) ∈ rho)
   version_unique : VersionUnique S
+  /-- rho ⊆ S × N × S: every provider edge relates members of the resolution. -/
+  provider_subset : ∀ q : Package N V, ∀ n : N, ∀ p : Package N V,
+    (q, n, p) ∈ rho → q ∈ S ∧ p ∈ S
 
 class HasVirtualNames (N V : Type*) (N' : outParam Type*) where
   origN : N ↪ N'

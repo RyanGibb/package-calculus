@@ -171,7 +171,7 @@ theorem peer_completeness
             hconc.parent_closure _ hnv m_ne vs_ne hdep_ne
           have hw₀_peer : w₀ ∈ ws_peer :=
             hres.peer_satisfaction _ hmu m_ne ws_peer hΘ _ hπ vs_ne hdep_ne
-              w₀ hw₀v hw₀S hw₀π
+              w₀ hw₀v hw₀π
           exact ⟨hcvr.origV w₀, Finset.mem_map.mpr ⟨w₀, hw₀_peer, rfl⟩,
             mem_inter hdep_ne hnv hw₀S hw₀v hw₀π⟩
         case isFalse => exact (List.mem_nil_iff _ |>.mp hmem').elim

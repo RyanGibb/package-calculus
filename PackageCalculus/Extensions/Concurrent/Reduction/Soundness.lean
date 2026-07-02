@@ -142,7 +142,7 @@ theorem concurrent_soundness
       (embedPkg g r) S)
     (hfunc : Δ_C.FunctionalInName) :
     IsConcurrentResolution R_C Δ_C g r (preimageS g S) (soundnessπ Δ_C g S) := by
-  refine ⟨?_, ?_, ?_, ?_⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · -- subset
     intro p hp
     rw [mem_preimageS] at hp
@@ -223,5 +223,12 @@ theorem concurrent_soundness
     intro n v v' hv hv' hne hge
     rw [mem_preimageS] at hv hv'
     exact hne (hcvr.origV.injective (hres.version_unique _ _ _ (hge ▸ hv) hv'))
+  · -- parent_subset
+    intro c p hcp
+    rw [mem_soundnessπ] at hcp
+    obtain ⟨n, v, m, vs, u, _, hvS, _, huS, _, heq⟩ := hcp
+    simp only [Prod.mk.injEq] at heq
+    obtain ⟨rfl, rfl⟩ := heq
+    exact ⟨mem_preimageS.mpr huS, mem_preimageS.mpr hvS⟩
 
 end PackageCalculus.Concurrent
