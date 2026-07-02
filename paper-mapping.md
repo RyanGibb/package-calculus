@@ -3,8 +3,9 @@ All file paths are relative to the `PackageCalculus/` source directory.
 
 Where the paper writes structured names like `⟨n, vs⟩ ∈ N` or `⟨n, f⟩`, the Lean uses dedicated inductive name/version types and `Has*Names` / `Has*Versions` typeclasses to inject them.
 
-The paper states one standing condition on every dependency relation (Def 3.1.2: Functional in Name).
+The paper states one standing condition on every dependency relation: Functional in Name (Def 3.1.2).
 In Lean it appears as an explicit hypothesis (`DepRel.FunctionalInName`) on the theorems that consume it.
+The paper's normalisation remark -- merging same-name entries per depender by intersecting their version sets -- is mechanised as `DepRel.merge` (`merge_functionalInName`, `merge_resolution_iff`), alongside `DepRel.restrictReal` (`restrictReal_resolution_iff`) for restricting version sets to real packages; both preserve the set of resolutions.
 
 ## 3. Modelling the Core
 
@@ -129,7 +130,7 @@ The SAT encoding in Appendix C is a separate SAT-based solving method (formalise
 
 | Paper                                     | Lean                       | File                          |
 | ----------------------------------------- | -------------------------- | ----------------------------- |
-| Def C.1 Package Calculus Reduction to SAT | `satisfiesEncoding`        | `Complexity/SATEncoding.lean` |
+| Def C.1 Package Calculus SAT Encoding     | `satisfiesEncoding`        | `Complexity/SATEncoding.lean` |
 | Thm C.2 Soundness                         | `satEncoding_soundness`    | `Complexity/SATEncoding.lean` |
 | Thm C.3 Completeness                      | `satEncoding_completeness` | `Complexity/SATEncoding.lean` |
 
@@ -139,3 +140,5 @@ The SAT encoding in Appendix C is a separate SAT-based solving method (formalise
 | ---------------------------------------- | ----------------------------------------------------------------------- | -------------------------- |
 | Def D.1 Singular Dependency              | `SingularRel`                                                           | `Extensions/Singular.lean` |
 | Def D.2 Singular Dependency Resolution   | `IsSingularResolution` (reduction `singularToCore`, `singular_is_core`) | `Extensions/Singular.lean` |
+
+Defs C.5 and C.6 (resolution ordering, ordered SAT encoding) and Appendix E (build graph, optional dependencies) are definitional discussion with no accompanying theorems, and are not mechanised.
