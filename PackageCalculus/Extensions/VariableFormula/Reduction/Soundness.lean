@@ -35,16 +35,18 @@ private theorem mem_preimageS [DecidableEq N] [DecidableEq V]
   simp [preimageS, Finset.mem_preimage]
 
 /-- Recover the variable assignment `σ` from a core resolution `S`: paper
-spec is `σ = {(x, y) | (⟨x⟩, y) ∈ S}`. We pick `y` via choice; if no such
-package exists in `S`, fall back to `Classical.arbitrary Y`. -/
-noncomputable def extractAssignment [Nonempty Y]
+spec (Thm 4.6.4) is `σ(x) = y` where `(⟨x⟩, y) ∈ S`, arbitrary in `Y_x`
+otherwise. -/
+noncomputable def extractAssignment
+    (Y_x : X → Finset Y) (hYx : ∀ x, (Y_x x).Nonempty)
     (S : Finset (Package N' V')) :
     X → Y :=
   fun x => if h : ∃ y, (hvn.varN x, hvv.varValV y) ∈ S
-           then h.choose else Classical.arbitrary Y
+           then h.choose else (hYx x).choose
 
 omit [DecidableEq N'] [DecidableEq V'] in
-private lemma extractAssignment_var [Nonempty Y]
+private lemma extractAssignment_var
+    {Y_x : X → Finset Y} {hYx : ∀ x, (Y_x x).Nonempty}
     {R : Real N' V'}
     {Δ : DepRel N' V'}
     {r : Package N' V'}
@@ -52,7 +54,7 @@ private lemma extractAssignment_var [Nonempty Y]
     (hres : IsResolution R Δ r S)
     (x : X) (y' : Y)
     (hS : (hvn.varN x, hvv.varValV y') ∈ S) :
-    (extractAssignment (N := N) (V := V) (X := X) (Y := Y) S) x = y' := by
+    extractAssignment (N := N) (V := V) Y_x hYx S x = y' := by
   unfold extractAssignment
   have hex : ∃ y₀, (hvn.varN x, hvv.varValV y₀) ∈ S := ⟨y', hS⟩
   rw [dif_pos hex]
@@ -90,21 +92,70 @@ private theorem embedPkg_mem_vfReal
   rcases h with ( h | ⟨ a, b, c, h₁, h₂ ⟩ | ⟨ a, b, h₁, h₂ ⟩ ) <;> simp_all +decide [ embedPkg ];
   exact False.elim ( witnessPackages_not_orig _ _ _ _ h₂ )
 
+private theorem witnessPackages_not_var
+    [LT Y] [DecidableEq Y] [DecidableRel (· < · : Y → Y → Prop)]
+    (p : Package N' V') (ψ : Formula N V X Y) (x₀ : X) (v : V') :
+    (hvn.varN x₀, v) ∉ witnessPackages p ψ := by
+  by_contra h_contra;
+  induction' h : Formula.weight ψ using Nat.strong_induction_on with w hw generalizing ψ p;
+  rcases ψ with ( _ | ⟨ ψ_L, ψ_R ⟩ | ⟨ ψ_L, ψ_R ⟩ | ⟨ x, ω, y ⟩ | ⟨ n, vs ⟩ );
+  all_goals simp +decide [ witnessPackages ] at h_contra;
+  · rcases h_contra with ( h_contra | h_contra );
+    · exact hw _ ( by simp +decide [ Formula.weight ] at h ⊢; linarith ) _ _ h_contra rfl;
+    · exact hw _ ( by rw [ show ( ψ_L.conj ψ_R ).weight = ψ_L.weight + ψ_R.weight + 2 from rfl ] at h; linarith ) _ _ h_contra rfl;
+  · rcases h_contra with ( h_contra | h_contra );
+    · exact hw _ ( by simp +decide [ Formula.weight ] at h ⊢; linarith ) _ _ h_contra rfl;
+    · exact hw _ ( by simp +decide [ Formula.weight ] at h ⊢; linarith ) _ _ h_contra rfl;
+  · rcases h_contra with ( h_contra | h_contra );
+    · exact hw _ ( by simp +decide [ Formula.weight ] at h ⊢; linarith ) _ _ h_contra rfl;
+    · exact hw _ ( by simp +decide [ Formula.weight ] at h ⊢; linarith ) _ _ h_contra rfl;
+  · rcases h_contra with ( h_contra | h_contra );
+    · exact hw _ ( by simp +decide [ Formula.weight ] at h ⊢; linarith ) _ _ h_contra rfl;
+    · exact hw _ ( by simp +decide [ Formula.weight ] at h ⊢; linarith ) _ _ h_contra rfl;
+  · exact hw _ ( by linarith [ show Formula.weight ‹_› < w from by linarith [ show Formula.weight ( Formula.neg ( Formula.neg ‹_› ) ) = 3 * ( Formula.weight ( Formula.neg ‹_› ) + 1 ) from rfl, show Formula.weight ( Formula.neg ‹_› ) = 3 * ( Formula.weight ‹_› + 1 ) from rfl ] ] ) _ _ h_contra rfl
+
+/-- The extracted assignment is domain-correct: `σ x ∈ Y_x x`. Forced values
+come from `vfReal`'s variable packages, whose versions are drawn from `Y_x`;
+fallback values are chosen from `Y_x` directly. -/
+theorem extractAssignment_mem
+    [DecidableEq N] [DecidableEq V] [DecidableEq X] [DecidableEq Y]
+    [LT Y] [DecidableRel (· < · : Y → Y → Prop)] [Fintype X]
+    (Y_x : X → Finset Y) (hYx : ∀ x, (Y_x x).Nonempty)
+    {R_Ψ : Real N V} {Δ_Ψ : VFDepRel N V X Y}
+    {S : Finset (Package N' V')}
+    (hsub : S ⊆ vfReal Y_x R_Ψ Δ_Ψ)
+    (x : X) :
+    extractAssignment (N := N) (V := V) Y_x hYx S x ∈ Y_x x := by
+  unfold extractAssignment
+  split
+  next h =>
+    have hmem := hsub h.choose_spec
+    unfold vfReal at hmem
+    simp only [Finset.mem_union, Finset.mem_image, Finset.mem_biUnion] at hmem
+    rcases hmem with (⟨p, _, hp⟩ | ⟨⟨q, ψ⟩, _, hp⟩) | ⟨x', _, y, hy, hp⟩
+    · cases p; simp [embedPkg, Prod.ext_iff] at hp
+    · exact absurd hp (witnessPackages_not_var _ _ _ _)
+    · obtain ⟨hn, hv⟩ := Prod.mk.injEq .. ▸ hp
+      cases hvn.varN.injective hn
+      cases hvv.varValV.injective hv
+      exact hy
+  next => exact (hYx x).choose_spec
+
 private def encode_satisfies [DecidableEq N] [DecidableEq V]
     [DecidableEq X] [DecidableEq Y]
-    [LT Y] [DecidableRel (· < · : Y → Y → Prop)] [Nonempty Y]
+    [LT Y] [DecidableRel (· < · : Y → Y → Prop)]
     {R : Real N' V'}
     {Δ : DepRel N' V'}
     {r : Package N' V'}
     {S : Finset (Package N' V')}
     (hres : IsResolution R Δ r S)
-    (Y_x : X → Finset Y)
+    (Y_x : X → Finset Y) (hYx : ∀ x, (Y_x x).Nonempty)
     (q : Package N' V')
     (ψ : Formula N V X Y)
     (henc : ∀ d, d ∈ encodeNNF Y_x q ψ → d ∈ Δ) (hq : q ∈ S) :
     ψ.satisfies
       (preimageS (X := X) (Y := Y) S)
-      (extractAssignment (N := N) (V := V) (X := X) (Y := Y) S) := by
+      (extractAssignment (N := N) (V := V) Y_x hYx S) := by
   match ψ with
   | .dep n vs =>
     simp only [encodeNNF] at henc
@@ -115,9 +166,9 @@ private def encode_satisfies [DecidableEq N] [DecidableEq V]
     exact ⟨v, hv, mem_preimageS.mpr hwS⟩
   | .conj ψ_L ψ_R =>
     simp only [encodeNNF] at henc
-    exact ⟨encode_satisfies hres Y_x q ψ_L
+    exact ⟨encode_satisfies hres Y_x hYx q ψ_L
             (fun d hd => henc d (Finset.mem_union.mpr (Or.inl hd))) hq,
-           encode_satisfies hres Y_x q ψ_R
+           encode_satisfies hres Y_x hYx q ψ_R
             (fun d hd => henc d (Finset.mem_union.mpr (Or.inr hd))) hq⟩
   | .disj ψ_L ψ_R =>
     simp only [encodeNNF] at henc
@@ -129,10 +180,10 @@ private def encode_satisfies [DecidableEq N] [DecidableEq V]
     simp only [Finset.mem_insert, Finset.mem_singleton] at hw
     rcases hw with rfl | rfl
     · left
-      exact encode_satisfies hres Y_x _ ψ_L
+      exact encode_satisfies hres Y_x hYx _ ψ_L
         (fun d hd' => henc d (Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inr hd'))))) hwS
     · right
-      exact encode_satisfies hres Y_x _ ψ_R
+      exact encode_satisfies hres Y_x hYx _ ψ_R
         (fun d hd' => henc d (Finset.mem_union.mpr (Or.inr hd'))) hwS
   | .varCmp x ω y =>
     simp only [encodeNNF] at henc
@@ -158,13 +209,13 @@ private def encode_satisfies [DecidableEq N] [DecidableEq V]
     simp only [Finset.mem_singleton] at hw2; subst hw2
     exact absurd (hres.version_unique _ _ _ hwS hw2S) hvv.oneV_ne_zeroV
   | .neg (.varCmp x ω y) =>
-    show ¬ Formula.satisfies (preimageS S) (extractAssignment S) (.varCmp x ω y)
+    show ¬ Formula.satisfies (preimageS S) (extractAssignment Y_x hYx S) (.varCmp x ω y)
     have key : encodeNNF (hvn := hvn) (hvv := hvv) Y_x q
         (Formula.neg (Formula.varCmp x ω y) : Formula N V X Y) =
         encodeNNF (hvn := hvn) (hvv := hvv) Y_x q
         (Formula.varCmp x (CmpOp.complement ω) y : Formula N V X Y) := by
       simp [encodeNNF]
-    have h := encode_satisfies hres Y_x q (Formula.varCmp x (CmpOp.complement ω) y)
+    have h := encode_satisfies hres Y_x hYx q (Formula.varCmp x (CmpOp.complement ω) y)
       (fun d hd => henc d (key ▸ hd)) hq
     simp only [Formula.satisfies] at h ⊢
     exact (complement_eval ω _ _).mp h
@@ -172,7 +223,7 @@ private def encode_satisfies [DecidableEq N] [DecidableEq V]
     have key : encodeNNF Y_x q (.neg (.conj ψ_L ψ_R)) =
         encodeNNF Y_x q (.disj (.neg ψ_L) (.neg ψ_R)) := by
       simp [encodeNNF]
-    have h := encode_satisfies hres Y_x q (.disj (.neg ψ_L) (.neg ψ_R))
+    have h := encode_satisfies hres Y_x hYx q (.disj (.neg ψ_L) (.neg ψ_R))
       (fun d hd => henc d (key ▸ hd)) hq
     simp only [Formula.satisfies] at h ⊢
     exact not_and_or.mpr h
@@ -180,14 +231,14 @@ private def encode_satisfies [DecidableEq N] [DecidableEq V]
     have key : encodeNNF Y_x q (.neg (.disj ψ_L ψ_R)) =
         encodeNNF Y_x q (.conj (.neg ψ_L) (.neg ψ_R)) := by
       simp [encodeNNF]
-    have h := encode_satisfies hres Y_x q (.conj (.neg ψ_L) (.neg ψ_R))
+    have h := encode_satisfies hres Y_x hYx q (.conj (.neg ψ_L) (.neg ψ_R))
       (fun d hd => henc d (key ▸ hd)) hq
     simp only [Formula.satisfies] at h ⊢
     exact not_or.mpr h
   | .neg (.neg ψ') =>
     have key : encodeNNF Y_x q (.neg (.neg ψ')) = encodeNNF Y_x q ψ' := by
       simp [encodeNNF]
-    have h := encode_satisfies hres Y_x q ψ' (fun d hd => henc d (key ▸ hd)) hq
+    have h := encode_satisfies hres Y_x hYx q ψ' (fun d hd => henc d (key ▸ hd)) hq
     simp only [Formula.satisfies]
     exact not_not_intro h
   termination_by ψ.weight
@@ -196,16 +247,17 @@ private def encode_satisfies [DecidableEq N] [DecidableEq V]
 -- Paper Thm 4.6.4 (Variable Formula Reduction Soundness).
 theorem variable_formula_soundness
     [DecidableEq N] [DecidableEq V] [DecidableEq X] [DecidableEq Y]
-    [LT Y] [DecidableRel (· < · : Y → Y → Prop)] [Fintype X] [Nonempty Y]
-    (Y_x : X → Finset Y)
+    [LT Y] [DecidableRel (· < · : Y → Y → Prop)] [Fintype X]
+    (Y_x : X → Finset Y) (hYx : ∀ x, (Y_x x).Nonempty)
     (R_Ψ : Real N V) (Δ_Ψ : VFDepRel N V X Y)
     (r : Package N V)
     (S : Finset (Package N' V'))
     (hres : IsResolution (vfReal Y_x R_Ψ Δ_Ψ) (vfDeps Y_x Δ_Ψ)
       (embedPkg (X := X) (Y := Y) r) S) :
     IsVFResolution R_Ψ Δ_Ψ r (preimageS (X := X) (Y := Y) S)
-      (extractAssignment (N := N) (V := V) (X := X) (Y := Y) S) := by
-  refine ⟨?_, ?_, ?_, ?_⟩
+      (extractAssignment (N := N) (V := V) Y_x hYx S) ∧
+    ∀ x, extractAssignment (N := N) (V := V) Y_x hYx S x ∈ Y_x x := by
+  refine ⟨⟨?_, ?_, ?_, ?_⟩, fun x => extractAssignment_mem Y_x hYx hres.subset x⟩
   · -- subset
     intro p hp
     rw [mem_preimageS] at hp
@@ -220,7 +272,7 @@ theorem variable_formula_soundness
       intro d hd
       simp only [vfDeps, encode, Finset.mem_biUnion]
       exact ⟨⟨p, ψ⟩, hdep, hd⟩
-    exact encode_satisfies hres Y_x (embedPkg (X := X) (Y := Y) p) ψ henc hp
+    exact encode_satisfies hres Y_x hYx (embedPkg (X := X) (Y := Y) p) ψ henc hp
   · -- version_unique
     intro n v v' hv hv'
     rw [mem_preimageS] at hv hv'

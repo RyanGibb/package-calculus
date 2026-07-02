@@ -10,15 +10,15 @@ variable [hvn : HasVFNames N V X Y N'] [hvv : HasVFVersions V Y V']
 /-! ## Lifting soundness & completeness -/
 
 theorem liftResolution_soundness
-    [LT Y] [DecidableRel (· < · : Y → Y → Prop)] [Fintype X] [Nonempty Y]
-    (Y_x : X → Finset Y)
+    [LT Y] [DecidableRel (· < · : Y → Y → Prop)] [Fintype X]
+    (Y_x : X → Finset Y) (hYx : ∀ x, (Y_x x).Nonempty)
     (R_Ψ : Real N V) (Δ_Ψ : VFDepRel N V X Y)
     (r : Package N V) (S' : Finset (Package N' V'))
     (hres : IsResolution (vfReal Y_x R_Ψ Δ_Ψ) (vfDeps Y_x Δ_Ψ)
       (embedPkg (X := X) (Y := Y) r) S') :
     IsVFResolution R_Ψ Δ_Ψ r (liftResolution (X := X) (Y := Y) S')
-      (extractAssignment (N := N) (V := V) (X := X) (Y := Y) S') := by
-  have hsound := variable_formula_soundness Y_x R_Ψ Δ_Ψ r S' hres
+      (extractAssignment (N := N) (V := V) Y_x hYx S') := by
+  have hsound := (variable_formula_soundness Y_x hYx R_Ψ Δ_Ψ r S' hres).1
   -- Show liftResolution and preimageS agree
   suffices heq : liftResolution (X := X) (Y := Y) S' =
       S'.preimage (embedPkg (X := X) (Y := Y))
