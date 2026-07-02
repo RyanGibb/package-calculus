@@ -7,7 +7,7 @@ The paper states one standing condition on every dependency relation: Functional
 In Lean it appears as an explicit hypothesis (`DepRel.FunctionalInName`) on the theorems that consume it.
 The paper's normalisation remark -- merging same-name entries per depender by intersecting their version sets -- is mechanised as `DepRel.merge` (`merge_functionalInName`, `merge_resolution_iff`), alongside `DepRel.restrictReal` (`restrictReal_resolution_iff`) for restricting version sets to real packages; both preserve the set of resolutions.
 
-## 3. Modelling the Core
+## 3. The Package Calculus
 
 | Paper                                        | Lean                                                   | File                                    |
 | -------------------------------------------- | ------------------------------------------------------ | ----------------------------------------|
@@ -22,7 +22,7 @@ The paper's normalisation remark -- merging same-name entries per depender by in
 | Def 3.2.5 Version Formula Reduction          | `vfReduce`                                             | `Versions/Reduction/Definition.lean`    |
 | Thm 3.2.6 Correctness                        | `version_formula_correct`                              | `Versions/Reduction/Correctness.lean`   |
 
-## 4. Extending the Calculus
+## 4. Package Managers, Mise en Place
 
 ### 4.1 Conflicts
 
@@ -96,7 +96,7 @@ The paper's normalisation remark -- merging same-name entries per depender by in
 | Thm 4.7.4 Soundness                  | `virtual_soundness`           | `Extensions/Virtual/Reduction/Soundness.lean`    |
 | Thm 4.7.5 Completeness               | `virtual_completeness`        | `Extensions/Virtual/Reduction/Completeness.lean` |
 
-## 5. Interoperating Across Ecosystems
+## 5. Package Managers, à la Carte
 
 ### 5.1 Composition of Extensions
 
@@ -107,7 +107,7 @@ The paper's normalisation remark -- merging same-name entries per depender by in
 | Thm 5.1.3 Soundness                     | `concurrent_feature_soundness`                    | `Composition/FeatureConcurrent/Reduction/Soundness.lean`    |
 | Thm 5.1.4 Completeness                  | `concurrent_feature_completeness`                 | `Composition/FeatureConcurrent/Reduction/Completeness.lean` |
 
-### 5.2 Transpiling
+### 5.2 Transpiling Packaging Languages
 
 The per-extension retraction `lift ∘ reduce = id` claimed in §5.2 is mechanised in each extension's `Lifting/` subdirectory.
 `Lifting/Definition.lean` defines `lift`, `Lifting/Retraction.lean` proves the retraction, and `Lifting/{Soundness,Completeness}.lean` show `lift` carries core resolutions back to extension resolutions.
