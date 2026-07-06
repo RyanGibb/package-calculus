@@ -75,5 +75,13 @@ instance : Feature.HasFeatureNames N F (Feature.FeatureName N F) where
     cases n' with
     | orig m => simp at h; subst h; rfl
     | featured _ _ => simp at h
+  tryFeaturedN := fun
+    | .featured n f => some (n, f)
+    | _ => none
+  tryFeaturedN_featuredN := fun _ _ => rfl
+  tryFeaturedN_some := fun n' p h => by
+    cases n' with
+    | featured n f => simp at h; obtain ⟨rfl, rfl⟩ := h; rfl
+    | orig _ => simp at h
 
 end PackageCalculus

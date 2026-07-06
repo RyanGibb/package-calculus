@@ -26,6 +26,40 @@ abbrev FeatDepRel (N V : Type*) [DecidableEq N] [DecidableEq V] (F : Type*) [Dec
 abbrev AddlDepRel (N V : Type*) [DecidableEq N] [DecidableEq V] (F : Type*) [DecidableEq F] :=
   Finset ((Package N V × F) × N × Finset V × Finset F)
 
+/-- **Groundedness of a support relation.** Every supported package is real.
+The reduction only materialises feature packages (and their base back-edges)
+for real packages, so support facts over non-repository packages leave no
+trace in the reduced problem; this is the condition under which the support
+relation is recoverable (§5.2 transpiling retraction). -/
+def Support.GroundedIn (support : Support N V F) (R : Real N V) : Prop :=
+  ∀ p f, (p, f) ∈ support → p ∈ R
+
+/-- The standing Functional-in-Name normalisation (Def 3.1.2), extended to
+feature dependencies: a package depends on a given name with at most one
+version set and required-feature set. -/
+def FeatDepRel.FunctionalInName (Δ_f : FeatDepRel N V F) : Prop :=
+  ∀ p n vs₁ fs₁ vs₂ fs₂,
+    (p, n, vs₁, fs₁) ∈ Δ_f → (p, n, vs₂, fs₂) ∈ Δ_f → vs₁ = vs₂ ∧ fs₁ = fs₂
+
+/-- The standing Functional-in-Name normalisation (Def 3.1.2), extended to
+additional dependencies: a (package, feature) pair depends on a given name
+with at most one version set and required-feature set. -/
+def AddlDepRel.FunctionalInName (Δ_a : AddlDepRel N V F) : Prop :=
+  ∀ pf m vs₁ fs₁ vs₂ fs₂,
+    (pf, m, vs₁, fs₁) ∈ Δ_a → (pf, m, vs₂, fs₂) ∈ Δ_a → vs₁ = vs₂ ∧ fs₁ = fs₂
+
+/-- **Base-requirement irredundancy.** No additional dependency restates the
+automatic base requirement `⟨⟨n,v⟩,f⟩ → n ∋ {v}` that feature activation
+already enforces for a supported real package. The reduction emits exactly
+this edge for every grounded support fact, so a redundant `Δ_a` entry of this
+shape is indistinguishable from it in the reduced problem; irredundancy is the
+condition under which the additional-dependency relation is recoverable on the
+nose (§5.2 transpiling retraction — without it, recovery is exact up to the
+base-requirement closure). -/
+def AddlDepRel.BaseIrredundant (Δ_a : AddlDepRel N V F) (R : Real N V)
+    (support : Support N V F) : Prop :=
+  ∀ n v f, ((n, v), f) ∈ support → (n, v) ∈ R → (((n, v), f), n, {v}, ∅) ∉ Δ_a
+
 structure IsFeatureResolution
     (R : Real N V)
     (support : Support N V F)
@@ -58,6 +92,10 @@ class HasFeatureNames (N F : Type*) (N' : outParam Type*) where
   tryOrigN : N' → Option N
   tryOrigN_origN : ∀ n, tryOrigN (origN n) = some n
   tryOrigN_some : ∀ n' n, tryOrigN n' = some n → origN n = n'
+  /-- Decidable partial inverse of `featuredN`. -/
+  tryFeaturedN : N' → Option (N × F)
+  tryFeaturedN_featuredN : ∀ n f, tryFeaturedN (featuredN n f) = some (n, f)
+  tryFeaturedN_some : ∀ n' p, tryFeaturedN n' = some p → featuredN p.1 p.2 = n'
 
 attribute [simp] HasFeatureNames.origN_ne_featuredN HasFeatureNames.featuredN_ne_origN
 

@@ -134,6 +134,20 @@ instance : Concurrent.HasConcurrentNames (Feature.FeatureName N F) V G (FCName N
     | granularOrig n g => simp at h; obtain ⟨rfl, rfl⟩ := h; rfl
     | granularFeatured n f g => simp at h; obtain ⟨rfl, rfl⟩ := h; rfl
     | _ => simp at h
+  tryIntermediateN := fun
+    | .intermediateOrigOrig n v m => some (.orig n, v, .orig m)
+    | .intermediateOrigFeatured n v m f => some (.orig n, v, .featured m f)
+    | .intermediateFeaturedOrig n f v m => some (.featured n f, v, .orig m)
+    | .intermediateFeaturedFeatured n f v m f' => some (.featured n f, v, .featured m f')
+    | _ => none
+  tryIntermediateN_intermediateN := fun n v m => by cases n <;> cases m <;> rfl
+  tryIntermediateN_some := fun n' p h => by
+    cases n' with
+    | intermediateOrigOrig n v m => simp at h; obtain ⟨rfl, rfl, rfl⟩ := h; rfl
+    | intermediateOrigFeatured n v m f => simp at h; obtain ⟨rfl, rfl, rfl⟩ := h; rfl
+    | intermediateFeaturedOrig n f v m => simp at h; obtain ⟨rfl, rfl, rfl⟩ := h; rfl
+    | intermediateFeaturedFeatured n f v m f' => simp at h; obtain ⟨rfl, rfl, rfl⟩ := h; rfl
+    | _ => simp at h
 
 /-- Typeclass providing the shared intermediate constructor used by the joint Concurrent
     Feature reduction. The constructor takes the depender's base name, its full version,

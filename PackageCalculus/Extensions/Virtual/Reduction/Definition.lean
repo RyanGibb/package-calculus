@@ -114,6 +114,14 @@ instance : Virtual.HasVirtualNames N V (Virtual.VirtualName N V) where
     cases n' with
     | orig m => simp at h; subst h; rfl
     | selector _ _ => simp at h
+  trySelectorN := fun
+    | .selector p n => some (p, n)
+    | _ => none
+  trySelectorN_selectorN := fun _ _ => rfl
+  trySelectorN_some := fun n' q h => by
+    cases n' with
+    | selector p n => simp at h; obtain ⟨rfl, rfl⟩ := h; rfl
+    | orig _ => simp at h
 
 instance : Virtual.HasVirtualVersions N V (Virtual.VirtualVersion N V) where
   origV := ⟨Virtual.VirtualVersion.orig, fun _ _ h => Virtual.VirtualVersion.orig.inj h⟩
@@ -132,5 +140,13 @@ instance : Virtual.HasVirtualVersions N V (Virtual.VirtualVersion N V) where
     cases v' with
     | orig w => simp at h; subst h; rfl
     | provider _ _ => simp at h
+  tryProviderV := fun
+    | .provider n w => some (n, w)
+    | _ => none
+  tryProviderV_providerV := fun _ _ => rfl
+  tryProviderV_some := fun v' q h => by
+    cases v' with
+    | provider n w => simp at h; obtain ⟨rfl, rfl⟩ := h; rfl
+    | orig _ => simp at h
 
 end PackageCalculus

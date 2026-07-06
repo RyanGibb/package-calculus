@@ -47,6 +47,52 @@ def Formula.weight : Formula N V X Y → Nat
   | .neg ψ => 3 * (ψ.weight + 1)
   | .varCmp _ _ _ => 0
 
+/-! ### NNF atoms
+
+As for package formulae, the encoding erases conjunction structure and drives
+negations inward; additionally, a variable comparison `x ω y` survives only as
+its *extension* — the set of domain values satisfying it — since the edge
+carries the evaluated version set and negated comparisons fold into complement
+operators. The preserved normal form is therefore the set of NNF atoms with
+variable atoms normalised to their extension over the declared domain. -/
+
+/-- An NNF atom: a positive literal, a negative literal, a disjunction kept
+whole, or a variable constrained to a set of domain values (the *extension*
+of a comparison over the declared domain). -/
+inductive Atom (N V X Y : Type*) where
+  | pos : N → Finset V → Atom N V X Y
+  | neg : N → Finset V → Atom N V X Y
+  | disj : Formula N V X Y → Formula N V X Y → Atom N V X Y
+  | var : X → Finset Y → Atom N V X Y
+  deriving DecidableEq
+
+/-- Satisfaction of an atom by a resolution set and an assignment. -/
+def Atom.satisfies [DecidableEq N] [DecidableEq V] [DecidableEq X] [DecidableEq Y]
+    [LT Y] [DecidableRel (· < · : Y → Y → Prop)]
+    (S : Finset (Package N V)) (σ : X → Y) : Atom N V X Y → Prop
+  | .pos n vs => ∃ v ∈ vs, (n, v) ∈ S
+  | .neg n vs => ¬∃ v ∈ vs, (n, v) ∈ S
+  | .disj ψ₁ ψ₂ => ψ₁.satisfies S σ ∨ ψ₂.satisfies S σ
+  | .var x ys => σ x ∈ ys
+
+variable [DecidableEq N] [DecidableEq V] [DecidableEq X] [DecidableEq Y] in
+/-- The NNF atoms of a formula over the per-variable domain `Y_x`, mirroring
+the recursion of `encodeNNF`. -/
+def atoms [LT Y] [DecidableRel (· < · : Y → Y → Prop)]
+    (Y_x : X → Finset Y) : Formula N V X Y → Finset (Atom N V X Y)
+  | .dep n vs => {.pos n vs}
+  | .conj ψ_L ψ_R => atoms Y_x ψ_L ∪ atoms Y_x ψ_R
+  | .disj ψ_L ψ_R => {.disj ψ_L ψ_R}
+  | .varCmp x ω y => {.var x ((Y_x x).filter (fun y' => ω.eval y' y))}
+  | .neg (.dep n vs) => {.neg n vs}
+  | .neg (.varCmp x ω y) =>
+    {.var x ((Y_x x).filter (fun y' => (CmpOp.complement ω).eval y' y))}
+  | .neg (.conj ψ_L ψ_R) => {.disj (.neg ψ_L) (.neg ψ_R)}
+  | .neg (.disj ψ_L ψ_R) => atoms Y_x (.neg ψ_L) ∪ atoms Y_x (.neg ψ_R)
+  | .neg (.neg ψ) => atoms Y_x ψ
+termination_by ψ => ψ.weight
+decreasing_by all_goals simp only [Formula.weight]; omega
+
 instance cmpOp_eval_decidable [inst_lt : LT Y] [DecidableEq Y]
     [DecidableRel (inst_lt.lt : Y → Y → Prop)]
     (ω : PackageCalculus.CmpOp) (y : Y) : DecidablePred (fun y' => ω.eval y' y = true) := by
@@ -221,6 +267,22 @@ instance : VarFormula.HasVFNames N V X Y (VarFormula.VFName N V X Y) where
   syntheticN_ne_varN := fun _ _ _ => nofun
   disjunctN_ne_syntheticN := fun _ _ _ _ => nofun
   syntheticN_ne_disjunctN := fun _ _ _ _ => nofun
+  tryVarN := fun
+    | .var x => some x
+    | _ => none
+  tryVarN_varN := fun _ => rfl
+  tryVarN_some := fun n' x h => by
+    cases n' with
+    | var x₀ => simp at h; subst h; rfl
+    | _ => simp at h
+  tryDisjunctN := fun
+    | .disjunct ψ₁ ψ₂ => some (ψ₁, ψ₂)
+    | _ => none
+  tryDisjunctN_disjunctN := fun _ _ => rfl
+  tryDisjunctN_some := fun n' q h => by
+    cases n' with
+    | disjunct a b => simp at h; obtain ⟨rfl, rfl⟩ := h; rfl
+    | _ => simp at h
 
 instance : VarFormula.HasVFVersions V Y (VarFormula.VFVersion V Y) where
   toHasConflictVersions :=
@@ -248,5 +310,13 @@ instance : VarFormula.HasVFVersions V Y (VarFormula.VFVersion V Y) where
   varValV_ne_zeroV := fun _ => nofun
   oneV_ne_varValV := fun _ => nofun
   varValV_ne_oneV := fun _ => nofun
+  tryVarValV := fun
+    | .varVal y => some y
+    | _ => none
+  tryVarValV_varValV := fun _ => rfl
+  tryVarValV_some := fun v' y h => by
+    cases v' with
+    | varVal y₀ => simp at h; subst h; rfl
+    | _ => simp at h
 
 end PackageCalculus

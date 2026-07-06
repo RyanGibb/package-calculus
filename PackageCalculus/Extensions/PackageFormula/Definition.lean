@@ -67,6 +67,10 @@ class HasPFNames (N V : Type*) (N' : outParam Type*) extends Conflict.HasConflic
   disjunctN_ne_origN : ∀ ψ₁ ψ₂ n, disjunctN ψ₁ ψ₂ ≠ origN n
   disjunctN_ne_syntheticN : ∀ ψ₁ ψ₂ m vs, disjunctN ψ₁ ψ₂ ≠ syntheticN m vs
   syntheticN_ne_disjunctN : ∀ m vs ψ₁ ψ₂, syntheticN m vs ≠ disjunctN ψ₁ ψ₂
+  /-- Decidable partial inverse of `disjunctN`. -/
+  tryDisjunctN : N' → Option (Formula N V × Formula N V)
+  tryDisjunctN_disjunctN : ∀ ψ₁ ψ₂, tryDisjunctN (disjunctN ψ₁ ψ₂) = some (ψ₁, ψ₂)
+  tryDisjunctN_some : ∀ n' q, tryDisjunctN n' = some q → disjunctN q.1 q.2 = n'
 
 attribute [simp] HasPFNames.origN_ne_disjunctN HasPFNames.disjunctN_ne_origN
   HasPFNames.disjunctN_ne_syntheticN HasPFNames.syntheticN_ne_disjunctN

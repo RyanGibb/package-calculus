@@ -56,6 +56,10 @@ class HasVirtualNames (N V : Type*) (N' : outParam Type*) where
   tryOrigN : N' → Option N
   tryOrigN_origN : ∀ n, tryOrigN (origN n) = some n
   tryOrigN_some : ∀ n' n, tryOrigN n' = some n → origN n = n'
+  /-- Decidable partial inverse of `selectorN`. -/
+  trySelectorN : N' → Option (Package N V × N)
+  trySelectorN_selectorN : ∀ p n, trySelectorN (selectorN p n) = some (p, n)
+  trySelectorN_some : ∀ n' q, trySelectorN n' = some q → selectorN q.1 q.2 = n'
 
 attribute [simp] HasVirtualNames.origN_ne_selectorN HasVirtualNames.selectorN_ne_origN
 
@@ -70,7 +74,22 @@ class HasVirtualVersions (N V : Type*) (V' : outParam Type*) where
   tryOrigV : V' → Option V
   tryOrigV_origV : ∀ v, tryOrigV (origV v) = some v
   tryOrigV_some : ∀ v' v, tryOrigV v' = some v → origV v = v'
+  /-- Decidable partial inverse of `providerV`. -/
+  tryProviderV : V' → Option (N × V)
+  tryProviderV_providerV : ∀ n w, tryProviderV (providerV n w) = some (n, w)
+  tryProviderV_some : ∀ v' q, tryProviderV v' = some q → providerV q.1 q.2 = v'
 
 attribute [simp] HasVirtualVersions.origV_ne_providerV HasVirtualVersions.providerV_ne_origV
+
+/-- **No self-provides.** No package provides its own name: provided names are
+properly virtual. The reduction routes a dependency on a virtual name through
+selector packages whose versions mirror the chosen provider; a self-provider
+`⟨⟨n,w⟩, n, v⟩` would make its selector→provider edge structurally identical to
+the selector→direct edge for the real version `w` of `n`, so the direct version
+set could not be separated from the providers in the reduced problem. This is
+the condition under which the dependency relation is recoverable up to
+`restrictReal` (§5.2 transpiling retraction). -/
+def ProvidesRel.NoSelfProvides (prov : ProvidesRel N V) : Prop :=
+  ∀ q n v, (q, n, v) ∈ prov → q.1 ≠ n
 
 end PackageCalculus.Virtual

@@ -1,5 +1,6 @@
 import PackageCalculus.Extensions.PeerDependency.Reduction.Completeness
 import PackageCalculus.Extensions.PeerDependency.Reduction.Soundness
+import PackageCalculus.Extensions.Concurrent.Lifting.Definition
 
 namespace PackageCalculus.PeerDep
 
@@ -87,5 +88,43 @@ theorem mem_liftResolution {g : V → G} {S' : Finset (Package N' V')} {p : Pack
     exact (tryInvPkg_some g (Option.mem_def.mpr hinv)) ▸ hp'
   · exact fun hp => ⟨_, hp, Option.mem_def.mpr (tryInvPkg_embed g p)⟩
 
+/-! ## Lifting the dependency and peer relations
+
+`peerDeps` sends the calculus to the core using two kinds of intermediate:
+`⟨n,v,m⟩`-intermediates mediate ordinary dependencies, and their edges into
+other intermediates carry peer constraints. Unlike the concurrent reduction,
+peer edges carry the *whole* version set (no granularity split), so both
+relations are recovered edge-locally:
+
+* the original dependency `⟨n,v⟩ → m ∋ vs` is read off the single
+  depender→intermediate edge (granular depender, intermediate dependee);
+* a peer constraint `⟨o,u⟩ → m ∋ ws` is read off any intermediate→intermediate
+  edge, decoding both intermediate names. -/
+
+/-- Invert a depender→intermediate edge to its core dependency. -/
+def tryInvDelta (g : V → G) (e : Package N' V' × N' × Finset V') :
+    Option (Package N V × N × Finset V) :=
+  match hcnm.tryGranularN e.1.1, hcvr.tryOrigV e.1.2, hcnm.tryIntermediateN e.2.1 with
+  | some (n, gv), some v, some (n2, v2, m) =>
+    let vs := Concurrent.decodeVS g e.2.2
+    if e.2.2 = vs.map hcvr.origV ∧ gv = g v ∧ n2 = n ∧ v2 = v then some ((n, v), m, vs) else none
+  | _, _, _ => none
+
+/-- Invert an intermediate→intermediate edge to its peer constraint. -/
+def tryInvPeer (g : V → G) (e : Package N' V' × N' × Finset V') :
+    Option (Package N V × N × Finset V) :=
+  match hcnm.tryIntermediateN e.1.1, hcvr.tryOrigV e.1.2, hcnm.tryIntermediateN e.2.1 with
+  | some (n, v, o), some u, some (n2, v2, m) =>
+    let ws := Concurrent.decodeVS g e.2.2
+    if e.2.2 = ws.map hcvr.origV ∧ n2 = n ∧ v2 = v then some ((o, u), m, ws) else none
+  | _, _, _ => none
+
+/-- Lift a core dependency relation back to a peer dependency relation. -/
+def liftDeps (g : V → G) (Δ' : DepRel N' V') : DepRel N V :=
+  Δ'.biUnion (fun e => (tryInvDelta g e).toFinset)
+
+/-- Lift a core dependency relation back to a peer relation. -/
+def liftPeer (g : V → G) (Δ' : DepRel N' V') : PeerRel N V :=
+  Δ'.biUnion (fun e => (tryInvPeer g e).toFinset)
 
 end PackageCalculus.PeerDep
