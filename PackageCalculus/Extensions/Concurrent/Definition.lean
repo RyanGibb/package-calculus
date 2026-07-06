@@ -40,6 +40,12 @@ class HasConcurrentNames (N V G : Type*) (N' : outParam Type*) where
   tryGranularN : N' → Option (N × G)
   tryGranularN_granularN : ∀ n g, tryGranularN (granularN n g) = some (n, g)
   tryGranularN_some : ∀ n' p, tryGranularN n' = some p → granularN p.1 p.2 = n'
+  /-- Decidable partial inverse of `intermediateN`. -/
+  tryIntermediateN : N' → Option (N × V × N)
+  tryIntermediateN_intermediateN : ∀ n v m,
+    tryIntermediateN (intermediateN n v m) = some (n, v, m)
+  tryIntermediateN_some : ∀ n' p, tryIntermediateN n' = some p →
+    intermediateN p.1 p.2.1 p.2.2 = n'
 
 attribute [simp] HasConcurrentNames.granularN_ne_intermediateN
   HasConcurrentNames.intermediateN_ne_granularN

@@ -109,9 +109,23 @@ The paper's normalisation remark -- merging same-name entries per depender by in
 
 ### 5.2 Transpiling Packaging Languages
 
-The per-extension retraction `lift ∘ reduce = id` claimed in §5.2 is mechanised in each extension's `Lifting/` subdirectory.
-`Lifting/Definition.lean` defines `lift`, `Lifting/Retraction.lean` proves the retraction, and `Lifting/{Soundness,Completeness}.lean` show `lift` carries core resolutions back to extension resolutions.
-These live under `Extensions/<Extension>/Lifting/` and `Versions/Lifting/`.
+Lifting is mechanised per extension under `Extensions/<Extension>/Lifting/` (and `Versions/Lifting/`): `Definition.lean` defines `lift`, `Retraction.lean` proves the round trip, and `Soundness.lean`/`Completeness.lean` carry core resolutions back to extension resolutions.
+
+| Extension         | Round trip                                | Mechanised statement                                                    | Side conditions                                                                                                  |
+| ----------------- | ----------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Conflict          | `conflictLift_conflictReduce`             | `lift ∘ reduce = id` (packages, dependencies, conflicts)                | --                                                                                                               |
+| Concurrent        | `concurrentLift_concurrentReduce`         | `lift ∘ reduce = id` (packages, dependencies)                           | `DepRel.FunctionalInName`                                                                                        |
+| Peer              | `peerLift_peerReduce`                     | `lift ∘ reduce = id` (packages, dependencies, peers)                    | `PeerRel.GroundedIn`                                                                                             |
+| Feature           | `featureLift_featureReduce`               | `lift ∘ reduce = id` (packages, support, feature deps, additional deps) | `Support.GroundedIn`, `FeatDepRel.FunctionalInName`, `AddlDepRel.FunctionalInName`, `AddlDepRel.BaseIrredundant` |
+| Virtual           | `virtualLift_virtualReduce`               | recovers `(R, Δ.restrictReal R)`; provides relation not recoverable     | `DepRel.FunctionalInName`, `ProvidesRel.NoSelfProvides`                                                          |
+| Package formulae  | `liftAtoms_pfDeps`, `satisfies_iff_atoms` | NNF atom-set normal form (no formula retraction exists)                 | --                                                                                                               |
+| Variable formulae | `liftAtoms_vfDeps`, `satisfies_iff_atoms` | atom-set normal form, comparisons up to extension                       | --                                                                                                               |
+| Version formulae  | `vfReduce ∘ liftVFDeps = restrictReal`    | section direction only                                                  | --                                                                                                               |
+
+Where the statement is weaker than `lift ∘ reduce = id`, the loss is syntactic rather than semantic: the lift recovers a normal form that is proven faithful.
+Formulae are recovered as their NNF atom sets, and `satisfies_iff_atoms` shows a resolution satisfies a formula iff it satisfies its atoms; a variable comparison is recovered as its extension, which is all evaluation consults; virtual and version-formula dependencies are recovered up to `restrictReal`, which removes only versions no resolution can select.
+The one genuinely unrecoverable component is the Virtual provides relation: distinct guards that expand to the same dependencies reduce identically, so it is not recovered in any form.
+Each side condition's docstring in the Lean states why it is needed.
 
 ## Appendix B -- `DependencyResolution` complexity
 

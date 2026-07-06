@@ -13,6 +13,16 @@ variable {N : Type*} [DecidableEq N] {V : Type*} [DecidableEq V] {G : Type*}
 abbrev PeerRel (N V : Type*) [DecidableEq N] [DecidableEq V] :=
   Finset (Package N V × N × Finset V)
 
+/-- **Groundedness of a peer relation.** Every peer constraint
+`⟨⟨o,u⟩, m, ws⟩ ∈ Θ` is *witnessed* by a package `⟨n,v⟩` that depends both on the
+peer name `o` (with a version set containing `u`) and on the constrained name
+`m`. The reduction only emits a core edge for a peer constraint through such a
+witness, so this is exactly the condition under which the peer relation is
+recoverable from the reduced problem (§5.2 transpiling retraction). -/
+def PeerRel.GroundedIn (Θ : PeerRel N V) (Δ : DepRel N V) : Prop :=
+  ∀ o u m ws, ((o, u), m, ws) ∈ Θ →
+    ∃ n v us, ((n, v), o, us) ∈ Δ ∧ u ∈ us ∧ ∃ ws', ((n, v), m, ws') ∈ Δ
+
 structure IsPeerResolution
     (R : Real N V) (Δ : DepRel N V)
     (Θ : PeerRel N V) (g : V → G) (r : Package N V)

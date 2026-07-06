@@ -33,6 +33,43 @@ def Formula.weight : Formula N V → Nat
   | .disj ψ₁ ψ₂ => ψ₁.weight + ψ₂.weight + 2
   | .neg ψ => 3 * (ψ.weight + 1)
 
+/-! ### NNF atoms
+
+The encoding erases conjunction structure (a conjunction's encoding is the
+union of its conjuncts') and drives negations inward by De Morgan / double
+negation. What it preserves of a formula is its set of *NNF atoms*: positive
+literals, negative literals, and whole disjunctions (whose synthetic names
+carry their subformulas verbatim). This is the normal form onto which the
+§5.2 retraction lands (`liftAtoms_pfDeps`). -/
+
+/-- An NNF atom: a positive literal, a negative literal, or a disjunction
+kept whole. -/
+inductive Atom (N V : Type*) where
+  | pos : N → Finset V → Atom N V
+  | neg : N → Finset V → Atom N V
+  | disj : Formula N V → Formula N V → Atom N V
+  deriving DecidableEq
+
+/-- The formula an atom denotes. -/
+def Atom.toFormula : Atom N V → Formula N V
+  | .pos n vs => .dep n vs
+  | .neg n vs => .neg (.dep n vs)
+  | .disj ψ₁ ψ₂ => .disj ψ₁ ψ₂
+
+variable [DecidableEq N] [DecidableEq V] in
+/-- The NNF atoms of a formula: flatten conjunctions and push negations
+inward, mirroring the recursion of `encodeNNF`. -/
+def atoms : Formula N V → Finset (Atom N V)
+  | .dep n vs => {.pos n vs}
+  | .conj ψ_L ψ_R => atoms ψ_L ∪ atoms ψ_R
+  | .disj ψ_L ψ_R => {.disj ψ_L ψ_R}
+  | .neg (.dep n vs) => {.neg n vs}
+  | .neg (.conj ψ_L ψ_R) => {.disj (.neg ψ_L) (.neg ψ_R)}
+  | .neg (.disj ψ_L ψ_R) => atoms (.neg ψ_L) ∪ atoms (.neg ψ_R)
+  | .neg (.neg ψ) => atoms ψ
+termination_by ψ => ψ.weight
+decreasing_by all_goals simp only [Formula.weight]; omega
+
 /-- Encoding function E: negation handled by inlining De Morgan / double-negation cases. -/
 def encodeNNF (p : Package N' V') :
     (ψ : Formula N V) →
@@ -135,5 +172,13 @@ instance : PkgFormula.HasPFNames N V (PkgFormula.PFName N V) where
   disjunctN_ne_origN := fun _ _ _ => nofun
   disjunctN_ne_syntheticN := fun _ _ _ _ => nofun
   syntheticN_ne_disjunctN := fun _ _ _ _ => nofun
+  tryDisjunctN := fun
+    | .disjunct ψ₁ ψ₂ => some (ψ₁, ψ₂)
+    | _ => none
+  tryDisjunctN_disjunctN := fun _ _ => rfl
+  tryDisjunctN_some := fun n' q h => by
+    cases n' with
+    | disjunct a b => simp at h; obtain ⟨rfl, rfl⟩ := h; rfl
+    | _ => simp at h
 
 end PackageCalculus

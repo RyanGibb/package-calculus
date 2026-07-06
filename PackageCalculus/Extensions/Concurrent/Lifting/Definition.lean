@@ -84,5 +84,85 @@ theorem mem_liftResolution {g : V → G} {S' : Finset (Package N' V')} {p : Pack
     exact (tryInvPkg_some g (Option.mem_def.mpr hinv)) ▸ hp'
   · exact fun hp => ⟨_, hp, Option.mem_def.mpr (tryInvPkg_embed g p)⟩
 
+/-! ## Lifting the dependency relation
+
+`concurrentDeps` sends one concurrent entry `((n, v), m, vs)` to a family of
+core edges whose shape depends on the granularity structure of `vs`:
+
+* a *direct* entry (`vs` non-empty, all versions of the same granularity)
+  yields a single edge carrying the full `vs`;
+* an *empty* entry (`vs = ∅`) yields a single depender→intermediate edge
+  carrying `∅`;
+* a *split* entry (`vs` spans ≥2 granularities) yields a depender→intermediate
+  edge plus one intermediate→dependee edge per granularity group.
+
+We recover each entry from a canonical family of edges: direct entries from
+their single edge, empty entries from their depender→intermediate edge, and
+split entries from their intermediate→dependee edges, reassembling `vs` as the
+union of the granularity groups (`gatherVs`). -/
+
+/-- Injectivity side-condition for `filterMap`ing `tryOrigV`. The unused
+`g` argument only serves to pin the granularity type `G`. -/
+private theorem tryOrigV_filterMap_inj (_g : V → G) :
+    ∀ (a a' : V') (b : V), b ∈ hcvr.tryOrigV a → b ∈ hcvr.tryOrigV a' → a = a' := by
+  intro a a' b ha ha'
+  have h1 := hcvr.tryOrigV_some _ _ (Option.mem_def.mp ha)
+  have h2 := hcvr.tryOrigV_some _ _ (Option.mem_def.mp ha')
+  exact h1.symm.trans h2
+
+/-- Decode a version set of `origV`-versions back to the underlying `Finset V`.
+The unused `g` argument only serves to pin the granularity type `G`. -/
+def decodeVS (g : V → G) (vs' : Finset V') : Finset V :=
+  vs'.filterMap hcvr.tryOrigV (tryOrigV_filterMap_inj g)
+
+theorem decodeVS_map_origV (g : V → G) (vs : Finset V) :
+    decodeVS g (vs.map hcvr.origV) = vs := by
+  ext x
+  simp only [decodeVS, Finset.mem_filterMap, Finset.mem_map]
+  constructor
+  · rintro ⟨y, ⟨v, hv, rfl⟩, hxy⟩
+    rw [hcvr.tryOrigV_origV] at hxy
+    obtain rfl := Option.some.inj hxy
+    exact hv
+  · intro hx
+    exact ⟨hcvr.origV x, ⟨x, hx, rfl⟩, hcvr.tryOrigV_origV x⟩
+
+/-- Reassemble the version set of a split entry as the union, over all
+intermediate→dependee edges leaving the intermediate name `I`, of their
+(decoded) version groups. -/
+def gatherVs (g : V → G) (Δ' : DepRel N' V') (I : N') : Finset V :=
+  (Δ'.filter (fun e => e.1.1 = I)).biUnion (fun e => decodeVS g e.2.2)
+
+/-- Try to invert a *direct* edge: both endpoints granular, versions all
+`origV`, granularity-consistent with `g`, and non-empty. -/
+def tryInvDirect (g : V → G) (e : Package N' V' × N' × Finset V') :
+    Option (Package N V × N × Finset V) :=
+  match hcnm.tryGranularN e.1.1, hcvr.tryOrigV e.1.2, hcnm.tryGranularN e.2.1 with
+  | some (n, gv), some v, some (m, mt) =>
+    let vs := decodeVS g e.2.2
+    if vs.map hcvr.origV = e.2.2 ∧ gv = g v ∧ vs.Nonempty ∧ (∀ u ∈ vs, g u = mt) then
+      some ((n, v), m, vs)
+    else none
+  | _, _, _ => none
+
+/-- Try to invert an *empty* edge: granular depender, intermediate dependee,
+empty version set. -/
+def tryInvEmpty (g : V → G) (e : Package N' V' × N' × Finset V') :
+    Option (Package N V × N × Finset V) :=
+  match hcnm.tryGranularN e.1.1, hcvr.tryOrigV e.1.2, hcnm.tryIntermediateN e.2.1 with
+  | some (n, gv), some v, some (n2, v2, m) =>
+    if e.2.2 = ∅ ∧ gv = g v ∧ n2 = n ∧ v2 = v then some ((n, v), m, ∅) else none
+  | _, _, _ => none
+
+/-- Try to invert a *split* intermediate→dependee edge: decode the intermediate
+name in the depender to `(n, v, m)`, and reassemble `vs` via `gatherVs`. -/
+def tryInvSplit (g : V → G) (Δ' : DepRel N' V') (e : Package N' V' × N' × Finset V') :
+    Option (Package N V × N × Finset V) :=
+  (hcnm.tryIntermediateN e.1.1).map (fun p => ((p.1, p.2.1), p.2.2, gatherVs g Δ' e.1.1))
+
+/-- Lift a core dependency relation back to a concurrent one. -/
+def liftDeps (g : V → G) (Δ' : DepRel N' V') : DepRel N V :=
+  Δ'.biUnion (fun e =>
+    (tryInvDirect g e).toFinset ∪ (tryInvEmpty g e).toFinset ∪ (tryInvSplit g Δ' e).toFinset)
 
 end PackageCalculus.Concurrent

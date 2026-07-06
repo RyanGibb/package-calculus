@@ -97,6 +97,14 @@ class HasVFNames (N V X Y : Type*) (N' : outParam Type*)
     disjunctN ψ₁ ψ₂ ≠ syntheticN m vs
   syntheticN_ne_disjunctN : ∀ m vs (ψ₁ ψ₂ : Formula N V X Y),
     syntheticN m vs ≠ disjunctN ψ₁ ψ₂
+  /-- Decidable partial inverse of `varN`. -/
+  tryVarN : N' → Option X
+  tryVarN_varN : ∀ x, tryVarN (varN x) = some x
+  tryVarN_some : ∀ n' x, tryVarN n' = some x → varN x = n'
+  /-- Decidable partial inverse of `disjunctN`. -/
+  tryDisjunctN : N' → Option (Formula N V X Y × Formula N V X Y)
+  tryDisjunctN_disjunctN : ∀ ψ₁ ψ₂, tryDisjunctN (disjunctN ψ₁ ψ₂) = some (ψ₁, ψ₂)
+  tryDisjunctN_some : ∀ n' q, tryDisjunctN n' = some q → disjunctN q.1 q.2 = n'
 
 attribute [simp]
   HasVFNames.origN_ne_varN HasVFNames.varN_ne_origN
@@ -117,6 +125,10 @@ class HasVFVersions (V Y : Type*) (V' : outParam Type*)
   varValV_ne_zeroV : ∀ y, varValV y ≠ zeroV
   oneV_ne_varValV : ∀ y, oneV ≠ varValV y
   varValV_ne_oneV : ∀ y, varValV y ≠ oneV
+  /-- Decidable partial inverse of `varValV`. -/
+  tryVarValV : V' → Option Y
+  tryVarValV_varValV : ∀ y, tryVarValV (varValV y) = some y
+  tryVarValV_some : ∀ v' y, tryVarValV v' = some y → varValV y = v'
 
 attribute [simp]
   HasVFVersions.origV_ne_varValV HasVFVersions.varValV_ne_origV

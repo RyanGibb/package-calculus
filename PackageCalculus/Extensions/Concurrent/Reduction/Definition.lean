@@ -123,6 +123,14 @@ instance : Concurrent.HasConcurrentNames N V G (Concurrent.ConcurrentName N V G)
     cases n' with
     | granular n g => simp at h; obtain ⟨rfl, rfl⟩ := h; rfl
     | intermediate _ _ _ => simp at h
+  tryIntermediateN := fun
+    | .intermediate n v m => some (n, v, m)
+    | _ => none
+  tryIntermediateN_intermediateN := fun _ _ _ => rfl
+  tryIntermediateN_some := fun n' p h => by
+    cases n' with
+    | intermediate n v m => simp at h; obtain ⟨rfl, rfl, rfl⟩ := h; rfl
+    | granular _ _ => simp at h
 
 instance : Concurrent.HasConcurrentVersions V G (Concurrent.ConcurrentVersion V G) where
   origV := ⟨Concurrent.ConcurrentVersion.orig,
