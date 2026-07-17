@@ -1,4 +1,5 @@
 name = "PackageCalculus"
+defaultTargets = ["PackageCalculus"]
 leanOptions = [["autoImplicit", false], ["weak.linter.docBlame", false]]
 
 [[lean_lib]]
