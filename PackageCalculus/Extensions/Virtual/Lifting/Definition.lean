@@ -154,4 +154,18 @@ def tryInvSelector (Δ' : DepRel N' V') (e : Package N' V' × N' × Finset V') :
 def liftDeps (R : Real N V) (Δ' : DepRel N' V') : DepRel N V :=
   Δ'.biUnion (fun e => (tryInvDirect R e).toFinset ∪ (tryInvSelector Δ' e).toFinset)
 
+/-- Invert a selector→provider edge to its instantiation triple `(q, n, p)`.
+Under `NoSelfProvides` the provider edges are exactly those whose provider
+version carries a name other than the selector's dependency name. -/
+def tryInvProv (e : Package N' V' × N' × Finset V') :
+    Option (Package N V × N × Package N V) :=
+  match hvn.trySelectorN e.1.1, hvv.tryProviderV e.1.2 with
+  | some (p, n), some (m, w) => if m = n then none else some ((m, w), n, p)
+  | _, _ => none
+
+/-- Lift the instantiation of the provides relation from the reduced
+dependency relation. -/
+def liftProv (Δ' : DepRel N' V') : Finset (Package N V × N × Package N V) :=
+  Δ'.biUnion fun e => (tryInvProv e).toFinset
+
 end PackageCalculus.Virtual

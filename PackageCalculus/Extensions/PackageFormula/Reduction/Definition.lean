@@ -40,7 +40,7 @@ union of its conjuncts') and drives negations inward by De Morgan / double
 negation. What it preserves of a formula is its set of *NNF atoms*: positive
 literals, negative literals, and whole disjunctions (whose synthetic names
 carry their subformulas verbatim). This is the normal form onto which the
-§5.2 retraction lands (`liftAtoms_pfDeps`). -/
+transpiling retraction lands (`liftAtoms_pfDeps`). -/
 
 /-- An NNF atom: a positive literal, a negative literal, or a disjunction
 kept whole. -/

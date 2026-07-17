@@ -30,11 +30,6 @@ def embedPkg (p : Package N V) : Package N' V' :=
 def embedSet (S : Finset (Package N V)) : Finset (Package N' V') :=
   S.image embedPkg
 
-instance decidableMemTop (v : VTop V) (vs : Finset V) : Decidable (memTop v vs) :=
-  match v with
-  | .top => Decidable.isTrue trivial
-  | .val v' => Finset.decidableMem v' vs
-
 def hasProvider (prov : ProvidesRel N V) (n : N) (vs : Finset V) : Prop :=
   ∃ q v, (q, n, v) ∈ prov ∧ memTop v vs
 

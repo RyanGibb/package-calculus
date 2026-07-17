@@ -10,7 +10,7 @@ The paper's normalisation remark -- merging same-name entries per depender by in
 ## 3. The Package Calculus
 
 | Paper                                        | Lean                                                   | File                                    |
-| -------------------------------------------- | ------------------------------------------------------ | ----------------------------------------|
+| -------------------------------------------- | ------------------------------------------------------ | --------------------------------------- |
 | Def 3.1.1 Package                            | `Real`, `Package`                                      | `Core/Definition.lean`                  |
 | Def 3.1.2 Dependency                         | `DepRel`                                               | `Core/Definition.lean`                  |
 | Def 3.1.3 Resolution                         | `IsResolution`                                         | `Core/Definition.lean`                  |
@@ -111,20 +111,20 @@ The paper's normalisation remark -- merging same-name entries per depender by in
 
 Lifting is mechanised per extension under `Extensions/<Extension>/Lifting/` (and `Versions/Lifting/`): `Definition.lean` defines `lift`, `Retraction.lean` proves the round trip, and `Soundness.lean`/`Completeness.lean` carry core resolutions back to extension resolutions.
 
-| Extension         | Round trip                                | Mechanised statement                                                    | Side conditions                                                                                                  |
-| ----------------- | ----------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Conflict          | `conflictLift_conflictReduce`             | `lift ∘ reduce = id` (packages, dependencies, conflicts)                | --                                                                                                               |
-| Concurrent        | `concurrentLift_concurrentReduce`         | `lift ∘ reduce = id` (packages, dependencies)                           | `DepRel.FunctionalInName`                                                                                        |
-| Peer              | `peerLift_peerReduce`                     | `lift ∘ reduce = id` (packages, dependencies, peers)                    | `PeerRel.GroundedIn`                                                                                             |
-| Feature           | `featureLift_featureReduce`               | `lift ∘ reduce = id` (packages, support, feature deps, additional deps) | `Support.GroundedIn`, `FeatDepRel.FunctionalInName`, `AddlDepRel.FunctionalInName`, `AddlDepRel.BaseIrredundant` |
-| Virtual           | `virtualLift_virtualReduce`               | recovers `(R, Δ.restrictReal R)`; provides relation not recoverable     | `DepRel.FunctionalInName`, `ProvidesRel.NoSelfProvides`                                                          |
-| Package formulae  | `liftAtoms_pfDeps`, `satisfies_iff_atoms` | NNF atom-set normal form (no formula retraction exists)                 | --                                                                                                               |
-| Variable formulae | `liftAtoms_vfDeps`, `satisfies_iff_atoms` | atom-set normal form, comparisons up to extension                       | --                                                                                                               |
-| Version formulae  | `vfReduce ∘ liftVFDeps = restrictReal`    | section direction only                                                  | --                                                                                                               |
+| Extension         | Round trip                                          | Mechanised statement                                                      | Side conditions                                                                                                  |
+| ----------------- | --------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Conflict          | `conflictLift_conflictReduce`                       | `lift ∘ reduce = id` (packages, dependencies, conflicts)                  | --                                                                                                               |
+| Concurrent        | `concurrentLift_concurrentReduce`                   | `lift ∘ reduce = id` (packages, dependencies)                             | `DepRel.FunctionalInName`                                                                                        |
+| Peer              | `peerLift_peerReduce`                               | `lift ∘ reduce = id` (packages, dependencies, peers)                      | `PeerRel.GroundedIn`                                                                                             |
+| Feature           | `featureLift_featureReduce`                         | `lift ∘ reduce = id` (packages, support, feature deps, additional deps)   | `Support.GroundedIn`, `FeatDepRel.FunctionalInName`, `AddlDepRel.FunctionalInName`, `AddlDepRel.BaseIrredundant` |
+| Virtual           | `virtualLift_virtualReduce`, `liftProv_virtualDeps` | recovers `(R, Δ.restrictReal R)`; provides recovered as its instantiation | `DepRel.FunctionalInName`, `ProvidesRel.NoSelfProvides`                                                          |
+| Package formulae  | `liftAtoms_pfDeps`, `satisfies_iff_atoms`           | NNF atom-set normal form (no formula retraction exists)                   | --                                                                                                               |
+| Variable formulae | `liftAtoms_vfDeps`, `satisfies_iff_atoms`           | atom-set normal form, comparisons up to extension                         | --                                                                                                               |
+| Version formulae  | `vfReduce ∘ liftVFDeps = restrictReal`              | section direction only                                                    | --                                                                                                               |
 
 Where the statement is weaker than `lift ∘ reduce = id`, the loss is syntactic rather than semantic: the lift recovers a normal form that is proven faithful.
 Formulae are recovered as their NNF atom sets, and `satisfies_iff_atoms` shows a resolution satisfies a formula iff it satisfies its atoms; a variable comparison is recovered as its extension, which is all evaluation consults; virtual and version-formula dependencies are recovered up to `restrictReal`, which removes only versions no resolution can select.
-The one genuinely unrecoverable component is the Virtual provides relation: distinct guards that expand to the same dependencies reduce identically, so it is not recovered in any form.
+The Virtual provides relation is likewise recovered as a normal form, its *instantiation* on Δ -- the admissible (provider, name, depender) triples -- and `instantiate_resolution_congr` shows resolutions consult it only through this instantiation; only the guards' behaviour on dependencies outside Δ is lost.
 Each side condition's docstring in the Lean states why it is needed.
 
 ## Appendix B -- `DependencyResolution` complexity
@@ -142,17 +142,17 @@ The SAT encoding in Appendix C is a separate SAT-based solving method (formalise
 
 ## Appendix C -- SAT-based resolution
 
-| Paper                                     | Lean                       | File                          |
-| ----------------------------------------- | -------------------------- | ----------------------------- |
-| Def C.1 Package Calculus SAT Encoding     | `satisfiesEncoding`        | `Complexity/SATEncoding.lean` |
-| Thm C.2 Soundness                         | `satEncoding_soundness`    | `Complexity/SATEncoding.lean` |
-| Thm C.3 Completeness                      | `satEncoding_completeness` | `Complexity/SATEncoding.lean` |
+| Paper                                 | Lean                       | File                          |
+| ------------------------------------- | -------------------------- | ----------------------------- |
+| Def C.1 Package Calculus SAT Encoding | `satisfiesEncoding`        | `Complexity/SATEncoding.lean` |
+| Thm C.2 Soundness                     | `satEncoding_soundness`    | `Complexity/SATEncoding.lean` |
+| Thm C.3 Completeness                  | `satEncoding_completeness` | `Complexity/SATEncoding.lean` |
 
 ## Appendix D -- Singular Dependencies
 
-| Paper                                    | Lean                                                                    | File                       |
-| ---------------------------------------- | ----------------------------------------------------------------------- | -------------------------- |
-| Def D.1 Singular Dependency              | `SingularRel`                                                           | `Extensions/Singular.lean` |
-| Def D.2 Singular Dependency Resolution   | `IsSingularResolution` (reduction `singularToCore`, `singular_is_core`) | `Extensions/Singular.lean` |
+| Paper                                  | Lean                                                                    | File                       |
+| -------------------------------------- | ----------------------------------------------------------------------- | -------------------------- |
+| Def D.1 Singular Dependency            | `SingularRel`                                                           | `Extensions/Singular.lean` |
+| Def D.2 Singular Dependency Resolution | `IsSingularResolution` (reduction `singularToCore`, `singular_is_core`) | `Extensions/Singular.lean` |
 
 Defs C.5 and C.6 (resolution ordering, ordered SAT encoding) and Appendix E (build graph, optional dependencies) are definitional discussion with no accompanying theorems, and are not mechanised.

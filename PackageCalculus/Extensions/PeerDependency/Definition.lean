@@ -18,7 +18,7 @@ abbrev PeerRel (N V : Type*) [DecidableEq N] [DecidableEq V] :=
 peer name `o` (with a version set containing `u`) and on the constrained name
 `m`. The reduction only emits a core edge for a peer constraint through such a
 witness, so this is exactly the condition under which the peer relation is
-recoverable from the reduced problem (§5.2 transpiling retraction). -/
+recoverable from the reduced problem (transpiling retraction). -/
 def PeerRel.GroundedIn (Θ : PeerRel N V) (Δ : DepRel N V) : Prop :=
   ∀ o u m ws, ((o, u), m, ws) ∈ Θ →
     ∃ n v us, ((n, v), o, us) ∈ Δ ∧ u ∈ us ∧ ∃ ws', ((n, v), m, ws') ∈ Δ

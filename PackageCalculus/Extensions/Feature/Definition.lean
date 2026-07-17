@@ -30,7 +30,7 @@ abbrev AddlDepRel (N V : Type*) [DecidableEq N] [DecidableEq V] (F : Type*) [Dec
 The reduction only materialises feature packages (and their base back-edges)
 for real packages, so support facts over non-repository packages leave no
 trace in the reduced problem; this is the condition under which the support
-relation is recoverable (§5.2 transpiling retraction). -/
+relation is recoverable (transpiling retraction). -/
 def Support.GroundedIn (support : Support N V F) (R : Real N V) : Prop :=
   ∀ p f, (p, f) ∈ support → p ∈ R
 
@@ -54,7 +54,7 @@ already enforces for a supported real package. The reduction emits exactly
 this edge for every grounded support fact, so a redundant `Δ_a` entry of this
 shape is indistinguishable from it in the reduced problem; irredundancy is the
 condition under which the additional-dependency relation is recoverable on the
-nose (§5.2 transpiling retraction — without it, recovery is exact up to the
+nose (without it, recovery is exact up to the
 base-requirement closure). -/
 def AddlDepRel.BaseIrredundant (Δ_a : AddlDepRel N V F) (R : Real N V)
     (support : Support N V F) : Prop :=

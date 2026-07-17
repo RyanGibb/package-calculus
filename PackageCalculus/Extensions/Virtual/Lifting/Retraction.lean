@@ -242,4 +242,37 @@ theorem virtualLift_virtualReduce (R : Real N V) (Δ : DepRel N V) (prov : Provi
        (virtualDeps (N' := N') (V' := V') Δ R prov)) = (R, Δ.restrictReal R) := by
   rw [liftReal_virtualReal, liftDeps_virtualDeps R Δ prov hfunc hself]
 
+/-- **Provides instantiation retraction.** The selector→provider edges of the
+reduced problem recover the instantiation of the provides relation — the
+normal form resolutions consult (`instantiate_resolution_congr`). -/
+theorem liftProv_virtualDeps (R : Real N V) (Δ : DepRel N V)
+    (prov : ProvidesRel N V) (hself : prov.NoSelfProvides) :
+    liftProv (virtualDeps (N' := N') (V' := V') Δ R prov) = prov.instantiate Δ := by
+  ext x
+  obtain ⟨q, n, p⟩ := x
+  simp only [liftProv, Finset.mem_biUnion, Option.mem_toFinset]
+  constructor
+  · rintro ⟨e, he, hinv⟩
+    rw [mem_virtualDeps_iff] at he
+    rcases he with ⟨p₁, n₁, vs, _, _, rfl⟩ | ⟨p₁, n₁, vs, _, _, rfl⟩ |
+        ⟨p₁, n₁, vs, hdep, m, w, v, hprov, hmt, rfl⟩ |
+        ⟨p₁, n₁, vs, _, _, u, _, _, rfl⟩
+    · simp [tryInvProv, embedPkg, trySelectorN_origN] at hinv
+    · simp [tryInvProv, embedPkg, trySelectorN_origN] at hinv
+    · simp only [tryInvProv, hvn.trySelectorN_selectorN, hvv.tryProviderV_providerV,
+        if_neg (hself _ _ _ hprov), Option.mem_def, Option.some.injEq] at hinv
+      obtain ⟨rfl, rfl, rfl⟩ := Prod.mk.injEq .. ▸ hinv
+      exact ProvidesRel.mem_instantiate.mpr ⟨vs, hdep, v, hmt, hprov⟩
+    · simp only [tryInvProv, hvn.trySelectorN_selectorN, hvv.tryProviderV_providerV,
+        if_true, Option.mem_def] at hinv
+      exact absurd hinv (by simp)
+  · intro hx
+    obtain ⟨vs, hdep, v, hv, hprov⟩ := ProvidesRel.mem_instantiate.mp hx
+    obtain ⟨m, w⟩ := q
+    refine ⟨((hvn.selectorN p n, hvv.providerV m w), hvn.origN m, {hvv.origV w}), ?_, ?_⟩
+    · rw [mem_virtualDeps_iff]
+      exact Or.inr (Or.inr (Or.inl ⟨p, n, vs, hdep, m, w, v, hprov, hv, rfl⟩))
+    · simp only [tryInvProv, hvn.trySelectorN_selectorN, hvv.tryProviderV_providerV,
+        if_neg (hself _ _ _ hprov), Option.mem_def]
+
 end PackageCalculus.Virtual
