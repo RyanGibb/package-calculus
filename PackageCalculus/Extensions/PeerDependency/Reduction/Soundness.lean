@@ -127,7 +127,6 @@ private theorem mem_peerDeps_peer {Δ_C : DepRel N V} {Θ : PeerRel N V} {g : V 
   rw [if_pos hne]
   exact Finset.mem_singleton.mpr rfl
 
--- Paper Thm 4.3.4 (Peer Dependency Reduction Soundness).
 theorem peer_soundness
     (R_C : Real N V) (Δ_C : DepRel N V)
     (Θ : PeerRel N V) (g : V → G) (r : Package N V)

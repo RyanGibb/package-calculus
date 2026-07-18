@@ -72,7 +72,6 @@ private theorem completenessWitness_mem_cases {S_Θ : Finset (Package N V)}
       exact ⟨n, v, m, vs, u, hdep, hnv, hmu, hu, hπ, rfl⟩
     case isFalse => exact (List.mem_nil_iff _ |>.mp hmem).elim
 
--- Paper Thm 4.3.5 (Peer Dependency Reduction Completeness).
 theorem peer_completeness
     (R_C : Real N V) (Δ_C : DepRel N V)
     (Θ : PeerRel N V) (g : V → G) (r : Package N V)

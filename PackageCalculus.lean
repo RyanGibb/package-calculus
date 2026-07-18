@@ -34,6 +34,11 @@ import PackageCalculus.Extensions.PeerDependency.Lifting.Retraction
 import PackageCalculus.Extensions.PeerDependency.Lifting.Soundness
 import PackageCalculus.Extensions.PeerDependency.Lifting.Completeness
 
+import PackageCalculus.Extensions.Visibility.Definition
+import PackageCalculus.Extensions.Visibility.Reduction.Definition
+import PackageCalculus.Extensions.Visibility.Reduction.Soundness
+import PackageCalculus.Extensions.Visibility.Reduction.Completeness
+
 import PackageCalculus.Extensions.Feature.Definition
 import PackageCalculus.Extensions.Feature.Reduction.Definition
 import PackageCalculus.Extensions.Feature.Reduction.Soundness

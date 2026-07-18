@@ -69,7 +69,6 @@ noncomputable def soundnessRho (Delta_v : DepRel N V) (prov : ProvidesRel N V)
         (hvn.selectorN p n, hvv.providerV q.1 q.2) ∈ S
       then {(q, n, p)} else ∅))
 
--- Paper Thm 4.7.4 (Virtual Package Reduction Soundness).
 theorem virtual_soundness
     (R_v : Real N V) (Delta_v : DepRel N V)
     (prov : ProvidesRel N V) (r : Package N V)

@@ -77,7 +77,6 @@ private theorem embedPkg_mem_real {p : Package N V} {R_Γ : Real N V} {Γ : Conf
     rcases hmem with ⟨h1, _⟩ | ⟨h1, _⟩ <;> exact absurd h1 (hcn.origN_ne_syntheticN _ _ _)
 
 omit [DecidableEq N] [DecidableEq V] in
--- Paper Thm 4.1.4 (Conflict Reduction Soundness).
 theorem conflict_soundness
     (R_Γ : Real N V) (Δ_Γ : DepRel N V) (Γ : ConflictRel N V)
     (r : Package N V)

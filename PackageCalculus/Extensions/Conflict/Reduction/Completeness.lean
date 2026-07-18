@@ -56,7 +56,6 @@ private theorem no_synthetic_pkg_in_conflictDeps {Δ_Γ : DepRel N V} {Γ : Conf
   · exact absurd heq.1.1 (hcn.origN_ne_syntheticN _ _ _)
   · exact absurd heq.1.1 (hcn.origN_ne_syntheticN _ _ _)
 
--- Paper Thm 4.1.5 (Conflict Reduction Completeness).
 theorem conflict_completeness
     (R_Γ : Real N V) (Δ_Γ : DepRel N V) (Γ : ConflictRel N V)
     (r : Package N V) (S_Γ : Finset (Package N V))

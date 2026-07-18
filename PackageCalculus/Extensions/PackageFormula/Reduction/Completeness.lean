@@ -955,7 +955,6 @@ The proof structure:
 - `dep_closure`: the structurally hard case, proved by a helper inducting on
   the formula.  See `encodeNNF_dep_closure` below. -/
 
--- Paper Thm 4.5.6 (Package Formula Reduction Completeness).
 theorem package_formula_completeness [DecidableEq N] [DecidableEq V]
     (R_Ψ : Real N V) (Δ_Ψ : PFDepRel N V)
     (r : Package N V)

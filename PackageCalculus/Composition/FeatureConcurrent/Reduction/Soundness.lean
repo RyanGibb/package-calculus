@@ -356,7 +356,6 @@ end SoundnessFields
 
 /-! ### Soundness -/
 
--- Paper Thm 5.1.3 (Concurrent Feature Reduction Soundness).
 theorem concurrent_feature_soundness
     [Fintype F]
     (R : Real N V)

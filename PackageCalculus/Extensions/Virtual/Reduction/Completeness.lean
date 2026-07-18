@@ -62,7 +62,6 @@ private theorem mem_cw_sel {Delta_v : DepRel N V} {prov : ProvidesRel N V}
   refine ⟨⟨p, n, vs⟩, ⟨hd, hp⟩, ?_⟩
   simp [hprov]
 
--- Paper Thm 4.7.5 (Virtual Package Reduction Completeness).
 theorem virtual_completeness
     (R_v : Real N V) (Delta_v : DepRel N V)
     (prov : ProvidesRel N V) (r : Package N V)

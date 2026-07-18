@@ -43,7 +43,6 @@ private theorem soundnessWitness_elim {S : Finset (Package N' V)}
   obtain ⟨⟨n, v⟩, hmem, rfl⟩ := h
   exact ⟨n, v, hmem, rfl⟩
 
--- Paper Thm 4.4.5 (Feature Reduction Soundness).
 theorem feature_soundness
     (R_f : Real N V) (support : Support N V F)
     (Δ_f : FeatDepRel N V F) (Δ_a : AddlDepRel N V F)

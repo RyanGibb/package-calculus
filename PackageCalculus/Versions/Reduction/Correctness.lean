@@ -5,7 +5,6 @@ namespace PackageCalculus
 variable {N : Type*} [DecidableEq N] {V : Type*} [LT V] [DecidableEq V]
   [DecidableRel (· < · : V → V → Prop)]
 
--- Paper Thm 3.2.6 (Version Formula Reduction Correctness).
 theorem version_formula_correct (R : Real N V)
     (Δ_Φ : VFDepRel N V) (r : Package N V) (S : Finset (Package N V)) :
     IsResolution R (vfReduce R Δ_Φ) r S ↔ IsVFResolution R Δ_Φ r S := by

@@ -972,7 +972,6 @@ private lemma witnessSet_version_pinning [DecidableEq N] [DecidableEq V] [Decida
 Mirrors PF: no `hΔ_cov`, no `hvu_wit`, no `p₀` plumbing -- just an
 `IsVFResolution` hypothesis. -/
 
--- Paper Thm 4.6.5 (Variable Formula Reduction Completeness).
 theorem variable_formula_completeness
     [DecidableEq N] [DecidableEq V] [DecidableEq X] [DecidableEq Y]
     [LT Y] [DecidableRel (· < · : Y → Y → Prop)] [Fintype X]

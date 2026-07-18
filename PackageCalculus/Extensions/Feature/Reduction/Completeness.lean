@@ -20,7 +20,6 @@ def completenessWitness (S_f : Finset (Package N V × Finset F)) :
   S_f.biUnion (fun ⟨⟨n, v⟩, fs⟩ =>
     fs.image (fun f => (hfn.featuredN n f, v)))
 
--- Paper Thm 4.4.6 (Feature Reduction Completeness).
 theorem feature_completeness
     (R_f : Real N V) (support : Support N V F)
     (Δ_f : FeatDepRel N V F) (Δ_a : AddlDepRel N V F)

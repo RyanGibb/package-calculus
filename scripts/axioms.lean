@@ -11,6 +11,9 @@ import PackageCalculus
 #print axioms PackageCalculus.PeerDep.peer_soundness
 #print axioms PackageCalculus.PeerDep.peer_completeness
 
+#print axioms PackageCalculus.Visibility.visibility_soundness
+#print axioms PackageCalculus.Visibility.visibility_completeness
+
 #print axioms PackageCalculus.Feature.feature_soundness
 #print axioms PackageCalculus.Feature.feature_completeness
 

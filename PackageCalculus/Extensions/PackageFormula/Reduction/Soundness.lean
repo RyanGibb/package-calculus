@@ -155,7 +155,6 @@ private def encode_satisfies [DecidableEq N] [DecidableEq V]
 termination_by ψ.weight
 decreasing_by all_goals simp only [Formula.weight]; omega
 
--- Paper Thm 4.5.5 (Package Formula Reduction Soundness).
 theorem package_formula_soundness [DecidableEq N] [DecidableEq V]
     (R_Ψ : Real N V) (Δ_Ψ : PFDepRel N V)
     (r : Package N V)

@@ -54,47 +54,58 @@ The paper's normalisation remark -- merging same-name entries per depender by in
 | Thm 4.3.4 Soundness                  | `peer_soundness`        | `Extensions/PeerDependency/Reduction/Soundness.lean`    |
 | Thm 4.3.5 Completeness               | `peer_completeness`     | `Extensions/PeerDependency/Reduction/Completeness.lean` |
 
-### 4.4 Features
+### 4.4 Dependency Visibility
+
+| Paper                           | Lean                                                  | File                                                |
+| ------------------------------- | ----------------------------------------------------- | --------------------------------------------------- |
+| Def 4.4.1 Public Dependency     | `PubRel`, `Priv`                                      | `Extensions/Visibility/Definition.lean`             |
+| Def 4.4.2 Visible Subgraph      | `InSub`                                               | `Extensions/Visibility/Definition.lean`             |
+| Def 4.4.3 Visibility Resolution | `IsVisibilityResolution`                              | `Extensions/Visibility/Definition.lean`             |
+| Def 4.4.4 Visibility Reduction  | `visReal` / `visDeps` (`potentialOrigins`, `carried`) | `Extensions/Visibility/Reduction/Definition.lean`   |
+| Thm 4.4.5 Soundness             | `visibility_soundness`                                | `Extensions/Visibility/Reduction/Soundness.lean`    |
+| Thm 4.4.6 Completeness          | `visibility_completeness`                             | `Extensions/Visibility/Reduction/Completeness.lean` |
+
+### 4.5 Features
 
 | Paper                        | Lean                          | File                                             |
 | ---------------------------- | ----------------------------- | ------------------------------------------------ |
-| Def 4.4.1 Feature            | `Support`                     | `Extensions/Feature/Definition.lean`             |
-| Def 4.4.2 Feature Dependency | `FeatDepRel`, `AddlDepRel`    | `Extensions/Feature/Definition.lean`             |
-| Def 4.4.3 Feature Resolution | `IsFeatureResolution`         | `Extensions/Feature/Definition.lean`             |
-| Def 4.4.4 Feature Reduction  | `featureReal` / `featureDeps` | `Extensions/Feature/Reduction/Definition.lean`   |
-| Thm 4.4.5 Soundness          | `feature_soundness`           | `Extensions/Feature/Reduction/Soundness.lean`    |
-| Thm 4.4.6 Completeness       | `feature_completeness`        | `Extensions/Feature/Reduction/Completeness.lean` |
+| Def 4.5.1 Feature            | `Support`                     | `Extensions/Feature/Definition.lean`             |
+| Def 4.5.2 Feature Dependency | `FeatDepRel`, `AddlDepRel`    | `Extensions/Feature/Definition.lean`             |
+| Def 4.5.3 Feature Resolution | `IsFeatureResolution`         | `Extensions/Feature/Definition.lean`             |
+| Def 4.5.4 Feature Reduction  | `featureReal` / `featureDeps` | `Extensions/Feature/Reduction/Definition.lean`   |
+| Thm 4.5.5 Soundness          | `feature_soundness`           | `Extensions/Feature/Reduction/Soundness.lean`    |
+| Thm 4.5.6 Completeness       | `feature_completeness`        | `Extensions/Feature/Reduction/Completeness.lean` |
 
-### 4.5 Package Formulae
+### 4.6 Package Formulae
 
 | Paper                                | Lean                                             | File                                                    |
 | ------------------------------------ | ------------------------------------------------ | ------------------------------------------------------- |
-| Def 4.5.1 Package Formula            | `Formula` (in namespace `PkgFormula`)            | `Extensions/PackageFormula/Definition.lean`             |
-| Def 4.5.2 Package Formula Dependency | `PFDepRel`                                       | `Extensions/PackageFormula/Definition.lean`             |
-| Def 4.5.3 Package Formula Resolution | `IsPFResolution`                                 | `Extensions/PackageFormula/Definition.lean`             |
-| Def 4.5.4 Package Formula Reduction  | `pfReal` / `pfDeps` (via `encode` / `encodeNNF`) | `Extensions/PackageFormula/Reduction/Definition.lean`   |
-| Thm 4.5.5 Soundness                  | `package_formula_soundness`                      | `Extensions/PackageFormula/Reduction/Soundness.lean`    |
-| Thm 4.5.6 Completeness               | `package_formula_completeness`                   | `Extensions/PackageFormula/Reduction/Completeness.lean` |
+| Def 4.6.1 Package Formula            | `Formula` (in namespace `PkgFormula`)            | `Extensions/PackageFormula/Definition.lean`             |
+| Def 4.6.2 Package Formula Dependency | `PFDepRel`                                       | `Extensions/PackageFormula/Definition.lean`             |
+| Def 4.6.3 Package Formula Resolution | `IsPFResolution`                                 | `Extensions/PackageFormula/Definition.lean`             |
+| Def 4.6.4 Package Formula Reduction  | `pfReal` / `pfDeps` (via `encode` / `encodeNNF`) | `Extensions/PackageFormula/Reduction/Definition.lean`   |
+| Thm 4.6.5 Soundness                  | `package_formula_soundness`                      | `Extensions/PackageFormula/Reduction/Soundness.lean`    |
+| Thm 4.6.6 Completeness               | `package_formula_completeness`                   | `Extensions/PackageFormula/Reduction/Completeness.lean` |
 
-### 4.6 Variable Formulae
+### 4.7 Variable Formulae
 
 | Paper                                 | Lean                                                                    | File                                                     |
 | ------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------- |
-| Def 4.6.1 Variable Formula            | `Formula N V X Y` (in namespace `VarFormula`), dep. relation `VFDepRel` | `Extensions/VariableFormula/Definition.lean`             |
-| Def 4.6.2 Variable Formula Resolution | `IsVFResolution`                                                        | `Extensions/VariableFormula/Definition.lean`             |
-| Def 4.6.3 Variable Formula Reduction  | `vfReal` / `vfDeps`                                                     | `Extensions/VariableFormula/Reduction/Definition.lean`   |
-| Thm 4.6.4 Soundness                   | `variable_formula_soundness`                                            | `Extensions/VariableFormula/Reduction/Soundness.lean`    |
-| Thm 4.6.5 Completeness                | `variable_formula_completeness`                                         | `Extensions/VariableFormula/Reduction/Completeness.lean` |
+| Def 4.7.1 Variable Formula            | `Formula N V X Y` (in namespace `VarFormula`), dep. relation `VFDepRel` | `Extensions/VariableFormula/Definition.lean`             |
+| Def 4.7.2 Variable Formula Resolution | `IsVFResolution`                                                        | `Extensions/VariableFormula/Definition.lean`             |
+| Def 4.7.3 Variable Formula Reduction  | `vfReal` / `vfDeps`                                                     | `Extensions/VariableFormula/Reduction/Definition.lean`   |
+| Thm 4.7.4 Soundness                   | `variable_formula_soundness`                                            | `Extensions/VariableFormula/Reduction/Soundness.lean`    |
+| Thm 4.7.5 Completeness                | `variable_formula_completeness`                                         | `Extensions/VariableFormula/Reduction/Completeness.lean` |
 
-### 4.7 Virtual Packages
+### 4.8 Virtual Packages
 
 | Paper                                | Lean                          | File                                             |
 | ------------------------------------ | ----------------------------- | ------------------------------------------------ |
-| Def 4.7.1 Virtual Package Provides   | `ProvidesRel`                 | `Extensions/Virtual/Definition.lean`             |
-| Def 4.7.2 Virtual Package Resolution | `IsVirtualResolution`         | `Extensions/Virtual/Definition.lean`             |
-| Def 4.7.3 Virtual Package Reduction  | `virtualReal` / `virtualDeps` | `Extensions/Virtual/Reduction/Definition.lean`   |
-| Thm 4.7.4 Soundness                  | `virtual_soundness`           | `Extensions/Virtual/Reduction/Soundness.lean`    |
-| Thm 4.7.5 Completeness               | `virtual_completeness`        | `Extensions/Virtual/Reduction/Completeness.lean` |
+| Def 4.8.1 Virtual Package Provides   | `ProvidesRel`                 | `Extensions/Virtual/Definition.lean`             |
+| Def 4.8.2 Virtual Package Resolution | `IsVirtualResolution`         | `Extensions/Virtual/Definition.lean`             |
+| Def 4.8.3 Virtual Package Reduction  | `virtualReal` / `virtualDeps` | `Extensions/Virtual/Reduction/Definition.lean`   |
+| Thm 4.8.4 Soundness                  | `virtual_soundness`           | `Extensions/Virtual/Reduction/Soundness.lean`    |
+| Thm 4.8.5 Completeness               | `virtual_completeness`        | `Extensions/Virtual/Reduction/Completeness.lean` |
 
 ## 5. Package Managers, à la Carte
 

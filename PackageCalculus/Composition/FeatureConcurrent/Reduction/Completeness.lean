@@ -641,7 +641,6 @@ end CompletenessFields
 
 /-! ### Completeness -/
 
--- Paper Thm 5.1.4 (Concurrent Feature Reduction Completeness).
 theorem concurrent_feature_completeness
     (R : Real N V)
     (Δ_f : Feature.FeatDepRel N V F) (Δ_a : Feature.AddlDepRel N V F)

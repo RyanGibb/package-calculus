@@ -133,7 +133,6 @@ private theorem mem_concurrentDeps_empty {Δ_C : DepRel N V} {g : V → G}
   refine ⟨⟨⟨n, v⟩, m, ∅⟩, hdep, ?_⟩
   exact Finset.mem_singleton.mpr rfl
 
--- Paper Thm 4.2.4 (Concurrent Reduction Soundness).
 theorem concurrent_soundness
     (R_C : Real N V) (Δ_C : DepRel N V)
     (g : V → G) (r : Package N V)
