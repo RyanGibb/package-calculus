@@ -290,7 +290,7 @@ theorem cfComplete_root_mem :
     cfCompletenessWitness (N_FC := N_FC) (V_FC := V_FC) S_CF π Δ_f Δ_a g := by
       exact cfCompletenessWitness_base_mem ( hres.root_mem )
 
-private theorem cfComplete_vu_intermediate
+theorem cfComplete_vu_intermediate
     {pn : N} {pv : V} {m : N} {w1 w2 : V}
     (hπ1 : ((m, w1), (pn, pv)) ∈ π)
     (hπ2 : ((m, w2), (pn, pv)) ∈ π) :
@@ -298,7 +298,7 @@ private theorem cfComplete_vu_intermediate
   congrArg _ (hres.π_functional m w1 w2 (pn, pv) hπ1 hπ2)
 
 set_option maxHeartbeats 3200000 in
-private theorem cfComplete_dep_closure_aux
+theorem cfComplete_dep_closure_aux
     (p : Package N_FC V_FC)
     (hp : p ∈ cfCompletenessWitness (N_FC := N_FC) (V_FC := V_FC) S_CF π Δ_f Δ_a g)
     (m_fc : N_FC) (vs : Finset V_FC)
@@ -576,7 +576,7 @@ theorem cfComplete_dep_closure :
   fun p hp m vs hdep => cfComplete_dep_closure_aux R Δ_f Δ_a support g r S_CF π hres p hp m vs hdep
 
 -- Helper: same granular name, same g value, use version_granularity
-private theorem cfComplete_vu_granular_same
+theorem cfComplete_vu_granular_same
     {n : N} {w1 w2 : V} {fs1 fs2 : Finset F}
     (hS1 : ((n, w1), fs1) ∈ S_CF) (hS2 : ((n, w2), fs2) ∈ S_CF)
     (hg : g w1 = g w2) : hcvr.origV w1 = hcvr.origV w2 := by

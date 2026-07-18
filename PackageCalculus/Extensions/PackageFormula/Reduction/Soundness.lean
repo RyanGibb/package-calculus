@@ -15,7 +15,7 @@ variable [DecidableEq N'] [DecidableEq V']
 variable [hpn : HasPFNames N V N'] [hpv : Conflict.HasConflictVersions V V']
 
 omit [DecidableEq N'] [DecidableEq V'] in
-private theorem embedPkg_injective :
+theorem embedPkg_injective :
     Function.Injective (embedPkg : Package N V → Package N' V') := by
   intro ⟨n₁, v₁⟩ ⟨n₂, v₂⟩ h
   simp only [embedPkg, Prod.mk.injEq] at h
@@ -27,7 +27,7 @@ private noncomputable def preimageS [DecidableEq N] [DecidableEq V]
     (Function.Injective.injOn embedPkg_injective))
 
 omit [DecidableEq N'] [DecidableEq V'] in
-private theorem mem_preimageS [DecidableEq N] [DecidableEq V]
+theorem mem_preimageS [DecidableEq N] [DecidableEq V]
     {S : Finset (Package N' V')} {p : Package N V} :
     p ∈ preimageS S ↔ embedPkg p ∈ S := by
   simp [preimageS, Finset.mem_preimage]
@@ -69,7 +69,7 @@ theorem witnessPackages_not_orig
 termination_by ψ.weight
 decreasing_by all_goals simp only [Formula.weight]; omega
 
-private theorem embedPkg_mem_pfReal [DecidableEq N] [DecidableEq V]
+theorem embedPkg_mem_pfReal [DecidableEq N] [DecidableEq V]
     {p : Package N V} {R_Ψ : Real N V} {Δ_Ψ : PFDepRel N V}
     (h : embedPkg p ∈ pfReal R_Ψ Δ_Ψ) : p ∈ R_Ψ := by
   simp only [pfReal, Finset.mem_union, Finset.mem_image, Finset.mem_biUnion] at h
@@ -78,7 +78,7 @@ private theorem embedPkg_mem_pfReal [DecidableEq N] [DecidableEq V]
   · exfalso
     exact witnessPackages_not_orig (embedPkg a.1) a.2 p.1 (hpv.origV p.2) hmem
 
-private def encode_satisfies [DecidableEq N] [DecidableEq V]
+def encode_satisfies [DecidableEq N] [DecidableEq V]
     {R : Real N' V'}
     {Δ : DepRel N' V'}
     {r : Package N' V'}

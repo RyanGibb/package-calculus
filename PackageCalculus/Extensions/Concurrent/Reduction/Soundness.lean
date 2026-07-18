@@ -17,7 +17,7 @@ variable {N' : Type*} {V' : Type*}
 variable [DecidableEq N] [DecidableEq V] [DecidableEq G] [DecidableEq N'] [DecidableEq V']
 variable [hcnm : HasConcurrentNames N V G N'] [hcvr : HasConcurrentVersions V G V']
 
-private theorem embedPkg_injective (g : V → G) :
+theorem embedPkg_injective (g : V → G) :
     Function.Injective (embedPkg (N := N) (N' := N') (V' := V') g) := by
   intro ⟨n₁, v₁⟩ ⟨n₂, v₂⟩ h
   simp only [embedPkg, Prod.mk.injEq] at h
@@ -31,12 +31,12 @@ private noncomputable def preimageS (g : V → G) (S : Finset (Package N' V')) :
   S.preimage (embedPkg g) (Set.InjOn.mono (Set.subset_univ _)
     (Function.Injective.injOn (embedPkg_injective g)))
 
-private theorem mem_preimageS {g : V → G} {S : Finset (Package N' V')} {p : Package N V} :
+theorem mem_preimageS {g : V → G} {S : Finset (Package N' V')} {p : Package N V} :
     p ∈ preimageS g S ↔ embedPkg g p ∈ S := by
   simp [preimageS, Finset.mem_preimage]
 
 /-- Construct the parent-witness relation π as a Finset from Δ_C and S. -/
-private def soundnessπ (Δ_C : DepRel N V) (g : V → G)
+def soundnessπ (Δ_C : DepRel N V) (g : V → G)
     (S : Finset (Package N' V')) : Finset (Package N V × Package N V) :=
   Δ_C.biUnion (fun ⟨⟨n, v⟩, m, vs⟩ =>
     vs.filter (fun u =>
@@ -46,7 +46,7 @@ private def soundnessπ (Δ_C : DepRel N V) (g : V → G)
         (hcnm.intermediateN n v m, hcvr.granV (g u₀)) ∈ S ∧ g u = g u₀))
     |>.image (fun u => ((m, u), (n, v))))
 
-private theorem mem_soundnessπ {Δ_C : DepRel N V} {g : V → G}
+theorem mem_soundnessπ {Δ_C : DepRel N V} {g : V → G}
     {S : Finset (Package N' V')} {pair : Package N V × Package N V} :
     pair ∈ soundnessπ Δ_C g S ↔
     ∃ n v m vs u, ((n, v), m, vs) ∈ Δ_C ∧
@@ -62,7 +62,7 @@ private theorem mem_soundnessπ {Δ_C : DepRel N V} {g : V → G}
   · rintro ⟨n, v, m, vs, u, hdep, hvS, huv, huS, hspl, rfl⟩
     exact ⟨⟨⟨n, v⟩, m, vs⟩, hdep, u, ⟨huv, huS, hvS, hspl⟩, rfl⟩
 
-private theorem embedPkg_mem_concurrentReal {g : V → G} {p : Package N V}
+theorem embedPkg_mem_concurrentReal {g : V → G} {p : Package N V}
     {R_C : Real N V} {Δ_C : DepRel N V}
     (h : embedPkg g p ∈ concurrentReal (N' := N') (V' := V') R_C Δ_C g) : p ∈ R_C := by
   simp only [concurrentReal, embedReal, Finset.mem_union, Finset.mem_image,
@@ -81,7 +81,7 @@ private theorem embedPkg_mem_concurrentReal {g : V → G} {p : Package N V}
       exact absurd heq.symm (hcnm.granularN_ne_intermediateN _ _ _ _ _)
     · exact (List.mem_nil_iff _).mp hmem |>.elim
 
-private theorem mem_concurrentDeps_direct {Δ_C : DepRel N V} {g : V → G}
+theorem mem_concurrentDeps_direct {Δ_C : DepRel N V} {g : V → G}
     {n : N} {v : V} {m : N} {vs : Finset V} {u₀ : V}
     (hdep : ((n, v), m, vs) ∈ Δ_C) (hdir : isDirect g vs) (hu₀ : u₀ ∈ vs) :
     ((hcnm.granularN n (g v), hcvr.origV v),
@@ -94,7 +94,7 @@ private theorem mem_concurrentDeps_direct {Δ_C : DepRel N V} {g : V → G}
   rw [if_pos hdir]
   exact Finset.mem_image.mpr ⟨u₀, hu₀, rfl⟩
 
-private theorem mem_concurrentDeps_split1 {Δ_C : DepRel N V} {g : V → G}
+theorem mem_concurrentDeps_split1 {Δ_C : DepRel N V} {g : V → G}
     {n : N} {v : V} {m : N} {vs : Finset V}
     (hdep : ((n, v), m, vs) ∈ Δ_C) (hspl : isSplit g vs) :
     ((hcnm.granularN n (g v), hcvr.origV v),
@@ -108,7 +108,7 @@ private theorem mem_concurrentDeps_split1 {Δ_C : DepRel N V} {g : V → G}
   rw [if_pos hspl]
   exact Finset.mem_singleton.mpr rfl
 
-private theorem mem_concurrentDeps_split2 {Δ_C : DepRel N V} {g : V → G}
+theorem mem_concurrentDeps_split2 {Δ_C : DepRel N V} {g : V → G}
     {n : N} {v : V} {m : N} {vs : Finset V} {u₀ : V}
     (hdep : ((n, v), m, vs) ∈ Δ_C) (hspl : isSplit g vs) (hu₀ : u₀ ∈ vs) :
     ((hcnm.intermediateN n v m, hcvr.granV (g u₀)),
@@ -122,7 +122,7 @@ private theorem mem_concurrentDeps_split2 {Δ_C : DepRel N V} {g : V → G}
   rw [if_pos hspl]
   exact Finset.mem_image.mpr ⟨u₀, hu₀, rfl⟩
 
-private theorem mem_concurrentDeps_empty {Δ_C : DepRel N V} {g : V → G}
+theorem mem_concurrentDeps_empty {Δ_C : DepRel N V} {g : V → G}
     {n : N} {v : V} {m : N}
     (hdep : ((n, v), m, (∅ : Finset V)) ∈ Δ_C) :
     ((hcnm.granularN n (g v), hcvr.origV v),

@@ -31,7 +31,7 @@ def completenessWitness (S_Θ : Finset (Package N V))
         (fun u => (hcnm.intermediateN n v m, hcvr.origV u))
     else ∅))
 
-private theorem mem_gran {S_Θ : Finset (Package N V)}
+theorem mem_gran {S_Θ : Finset (Package N V)}
     {π : Finset (Package N V × Package N V)}
     {Δ_C : DepRel N V} {g : V → G}
     {n : N} {v : V} (h : (n, v) ∈ S_Θ) :
@@ -39,7 +39,7 @@ private theorem mem_gran {S_Θ : Finset (Package N V)}
       completenessWitness S_Θ π Δ_C g :=
   Finset.mem_union.mpr (Or.inl (Finset.mem_image.mpr ⟨⟨n, v⟩, h, rfl⟩))
 
-private theorem mem_inter {S_Θ : Finset (Package N V)}
+theorem mem_inter {S_Θ : Finset (Package N V)}
     {π : Finset (Package N V × Package N V)}
     {Δ_C : DepRel N V} {g : V → G}
     {n : N} {v : V} {m : N} {vs : Finset V} {u : V}
@@ -53,7 +53,7 @@ private theorem mem_inter {S_Θ : Finset (Package N V)}
   simp only; rw [if_pos hnv]
   exact Finset.mem_image.mpr ⟨u, Finset.mem_filter.mpr ⟨hu, hmu, hπ⟩, rfl⟩
 
-private theorem completenessWitness_mem_cases {S_Θ : Finset (Package N V)}
+theorem completenessWitness_mem_cases {S_Θ : Finset (Package N V)}
     {π : Finset (Package N V × Package N V)}
     {Δ_C : DepRel N V} {g : V → G}
     {q : Package N' V'} (hq : q ∈ completenessWitness S_Θ π Δ_C g) :

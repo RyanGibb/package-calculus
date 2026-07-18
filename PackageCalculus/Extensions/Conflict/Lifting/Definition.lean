@@ -9,13 +9,6 @@ variable {N : Type*} [DecidableEq N] {V : Type*} [DecidableEq V]
 variable {N' : Type*} [DecidableEq N'] {V' : Type*} [DecidableEq V']
 variable [hcn : HasConflictNames N V N'] [hcv : HasConflictVersions V V']
 
-private def embedPkgFn : Package N V → Package N' V' :=
-  fun p => (hcn.origN p.1, hcv.origV p.2)
-
-omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem embedPkgFn_eq_embedPkg : (embedPkgFn : Package N V → Package N' V') = embedPkg :=
-  rfl
-
 def embedDepFn : Package N V × N × Finset V → Package N' V' × N' × Finset V' :=
   fun ⟨p, m, vs⟩ => ((hcn.origN p.1, hcv.origV p.2), hcn.origN m, vs.map hcv.origV)
 
@@ -23,39 +16,6 @@ def conflictDepFn : Package N V × N × Finset V → Package N' V' × N' × Fins
   fun ⟨p, n, vs⟩ => ((hcn.origN p.1, hcv.origV p.2), hcn.syntheticN n vs, {hcv.oneV})
 
 /-! ## Computable inverse helpers -/
-
-/-- Try to invert `embedPkgFn` on a single element. -/
-private def tryInvPkg (p : Package N' V') : Option (Package N V) :=
-  match hcn.tryOrigN p.1, hcv.tryOrigV p.2 with
-  | some n, some v => some (n, v)
-  | _, _ => none
-
-omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem tryInvPkg_embed (p : Package N V) :
-    tryInvPkg (embedPkgFn p) = some p := by
-  simp [tryInvPkg, embedPkgFn, hcn.tryOrigN_origN, hcv.tryOrigV_origV]
-
-omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem tryInvPkg_some {p' : Package N' V'} {p : Package N V}
-    (h : p ∈ tryInvPkg p') : embedPkgFn p = p' := by
-  obtain ⟨n', v'⟩ := p'
-  obtain ⟨n, v⟩ := p
-  simp only [tryInvPkg, Option.mem_def, embedPkgFn] at h ⊢
-  generalize htn : hcn.tryOrigN n' = on at h
-  generalize htv : hcv.tryOrigV v' = ov at h
-  match on, ov with
-  | some n₀, some v₀ =>
-    simp at h; obtain ⟨rfl, rfl⟩ := h
-    show (hcn.origN n₀, hcv.origV v₀) = (n', v')
-    rw [hcn.tryOrigN_some _ _ htn, hcv.tryOrigV_some _ _ htv]
-  | some _, none => simp at h
-  | none, _ => simp at h
-
-omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem tryInvPkg_inj :
-    ∀ a a' (b : Package N V), b ∈ tryInvPkg a → b ∈ tryInvPkg a' → a = a' := by
-  intro a a' b ha ha'
-  exact (tryInvPkg_some ha).symm.trans (tryInvPkg_some ha')
 
 /-- The injectivity side-condition for `filterMap`ing `tryOrigV`. -/
 private theorem tryOrigV_filterMap_inj :
@@ -139,7 +99,6 @@ private theorem tryInvConflict_some {d : Package N' V' × N' × Finset V'}
     obtain rfl := Option.some.inj h
     simp only [conflictDepFn]
     have hpeq := tryInvPkg_some (Option.mem_def.mpr hp)
-    rw [embedPkgFn_eq_embedPkg] at hpeq
     have hmeq := hcn.trySyntheticN_some _ _ hm
     exact Prod.ext hpeq (Prod.ext hmeq hone.symm)
   · simp
@@ -149,8 +108,7 @@ private theorem tryInvConflict_conflictDepFn (c : Package N V × N × Finset V) 
   obtain ⟨⟨pn, pv⟩, n, vs⟩ := c
   simp only [tryInvConflict, conflictDepFn, hcn.trySyntheticN_syntheticN, if_pos]
   have : tryInvPkg ((hcn.origN pn, hcv.origV pv) : Package N' V') = some (pn, pv) := by
-    have := tryInvPkg_embed (pn, pv)
-    rwa [embedPkgFn] at this
+    simpa [embedPkg] using tryInvPkg_embed (pn, pv)
   rw [this]
 
 private theorem tryInvConflict_inj :
@@ -182,7 +140,7 @@ def conflictLift (R' : Real N' V') (Δ' : DepRel N' V') :
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
 theorem mem_liftReal {R' : Real N' V'} {p : Package N V} :
     p ∈ liftReal R' ↔ embedPkg p ∈ R' := by
-  simp only [liftReal, Finset.mem_filterMap, ← embedPkgFn_eq_embedPkg]
+  simp only [liftReal, Finset.mem_filterMap]
   constructor
   · rintro ⟨_, hp', hinv⟩; exact tryInvPkg_some hinv ▸ hp'
   · exact fun hp => ⟨_, hp, tryInvPkg_embed p⟩
@@ -190,7 +148,7 @@ theorem mem_liftReal {R' : Real N' V'} {p : Package N V} :
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
 theorem mem_liftResolution {S' : Finset (Package N' V')} {p : Package N V} :
     p ∈ liftResolution S' ↔ embedPkg p ∈ S' := by
-  simp only [liftResolution, Finset.mem_filterMap, ← embedPkgFn_eq_embedPkg]
+  simp only [liftResolution, Finset.mem_filterMap]
   constructor
   · rintro ⟨_, hp', hinv⟩; exact tryInvPkg_some hinv ▸ hp'
   · exact fun hp => ⟨_, hp, tryInvPkg_embed p⟩

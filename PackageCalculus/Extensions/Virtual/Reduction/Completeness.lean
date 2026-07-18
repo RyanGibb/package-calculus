@@ -13,7 +13,7 @@ variable {N' : Type*} [DecidableEq N'] {V' : Type*} [DecidableEq V']
 variable [hvn : HasVirtualNames N V N'] [hvv : HasVirtualVersions N V V']
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem embedPkg_inj {p q : Package N V}
+theorem embedPkg_inj {p q : Package N V}
     (h : @embedPkg N V N' V' _ _ p = embedPkg q) : p = q := by
   obtain ⟨pn, pv⟩ := p; obtain ⟨qn, qv⟩ := q
   simp only [embedPkg, Prod.mk.injEq] at h
@@ -44,13 +44,13 @@ noncomputable def completenessWitness
       {(hvn.selectorN p n, selectorVersion S_v rho prov p n vs hp)}
     else ∅)
 
-private theorem mem_cw_emb {Delta_v : DepRel N V} {prov : ProvidesRel N V}
+theorem mem_cw_emb {Delta_v : DepRel N V} {prov : ProvidesRel N V}
     {S_v : Finset (Package N V)} {rho : Finset (Package N V × N × Package N V)}
     {p : Package N V} (hp : p ∈ S_v) :
     embedPkg p ∈ completenessWitness Delta_v prov S_v rho :=
   Finset.mem_union.mpr (Or.inl (Finset.mem_image.mpr ⟨p, hp, rfl⟩))
 
-private theorem mem_cw_sel {Delta_v : DepRel N V} {prov : ProvidesRel N V}
+theorem mem_cw_sel {Delta_v : DepRel N V} {prov : ProvidesRel N V}
     {S_v : Finset (Package N V)} {rho : Finset (Package N V × N × Package N V)}
     {p : Package N V} {n : N} {vs : Finset V}
     (hp : p ∈ S_v) (hd : (p, n, vs) ∈ Delta_v) (hprov : hasProvider prov n vs) :

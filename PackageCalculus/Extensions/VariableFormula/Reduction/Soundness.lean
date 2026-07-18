@@ -16,7 +16,7 @@ variable [DecidableEq N'] [DecidableEq V']
 variable [hvn : HasVFNames N V X Y N'] [hvv : HasVFVersions V Y V']
 
 omit [DecidableEq N'] [DecidableEq V'] in
-private theorem embedPkg_injective :
+theorem embedPkg_injective :
     Function.Injective (embedPkg (X := X) (Y := Y) : Package N V → Package N' V') := by
   intro ⟨n₁, v₁⟩ ⟨n₂, v₂⟩ h
   simp only [embedPkg, Prod.mk.injEq] at h
@@ -29,7 +29,7 @@ private noncomputable def preimageS [DecidableEq N] [DecidableEq V]
       (Function.Injective.injOn (embedPkg_injective (X := X) (Y := Y))))
 
 omit [DecidableEq N'] [DecidableEq V'] in
-private theorem mem_preimageS [DecidableEq N] [DecidableEq V]
+theorem mem_preimageS [DecidableEq N] [DecidableEq V]
     {S : Finset (Package N' V')} {p : Package N V} :
     p ∈ preimageS (X := X) (Y := Y) S ↔ embedPkg (X := X) (Y := Y) p ∈ S := by
   simp [preimageS, Finset.mem_preimage]
@@ -60,7 +60,7 @@ private lemma extractAssignment_var
   rw [dif_pos hex]
   exact hvv.varValV.injective (hres.version_unique _ _ _ hex.choose_spec hS)
 
-private theorem witnessPackages_not_orig
+theorem witnessPackages_not_orig
     [LT Y] [DecidableEq Y] [DecidableRel (· < · : Y → Y → Prop)]
     (p : Package N' V') (ψ : Formula N V X Y) (n : N) (v : V') :
     (hvn.origN n, v) ∉ witnessPackages p ψ := by
@@ -82,7 +82,7 @@ private theorem witnessPackages_not_orig
     · exact hw _ ( by simp +decide [ Formula.weight ] at h ⊢; linarith ) _ _ h_contra rfl;
   · exact hw _ ( by linarith [ show Formula.weight ‹_› < w from by linarith [ show Formula.weight ( Formula.neg ( Formula.neg ‹_› ) ) = 3 * ( Formula.weight ( Formula.neg ‹_› ) + 1 ) from rfl, show Formula.weight ( Formula.neg ‹_› ) = 3 * ( Formula.weight ‹_› + 1 ) from rfl ] ] ) _ _ h_contra rfl
 
-private theorem embedPkg_mem_vfReal
+theorem embedPkg_mem_vfReal
     [DecidableEq N] [DecidableEq V] [DecidableEq X] [DecidableEq Y]
     [LT Y] [DecidableRel (· < · : Y → Y → Prop)] [Fintype X]
     (Y_x : X → Finset Y)
@@ -92,7 +92,7 @@ private theorem embedPkg_mem_vfReal
   rcases h with ( h | ⟨ a, b, c, h₁, h₂ ⟩ | ⟨ a, b, h₁, h₂ ⟩ ) <;> simp_all +decide [ embedPkg ];
   exact False.elim ( witnessPackages_not_orig _ _ _ _ h₂ )
 
-private theorem witnessPackages_not_var
+theorem witnessPackages_not_var
     [LT Y] [DecidableEq Y] [DecidableRel (· < · : Y → Y → Prop)]
     (p : Package N' V') (ψ : Formula N V X Y) (x₀ : X) (v : V') :
     (hvn.varN x₀, v) ∉ witnessPackages p ψ := by
@@ -141,7 +141,7 @@ theorem extractAssignment_mem
       exact hy
   next => exact (hYx x).choose_spec
 
-private def encode_satisfies [DecidableEq N] [DecidableEq V]
+def encode_satisfies [DecidableEq N] [DecidableEq V]
     [DecidableEq X] [DecidableEq Y]
     [LT Y] [DecidableRel (· < · : Y → Y → Prop)]
     {R : Real N' V'}

@@ -15,7 +15,7 @@ variable {N' : Type*} [DecidableEq N'] {V' : Type*} [DecidableEq V']
 variable [hvn : HasVirtualNames N V N'] [hvv : HasVirtualVersions N V V']
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem embedPkg_injective :
+theorem embedPkg_injective :
     Function.Injective (embedPkg : Package N V → Package N' V') := by
   intro ⟨n₁, v₁⟩ ⟨n₂, v₂⟩ h
   simp only [embedPkg, Prod.mk.injEq] at h
@@ -26,11 +26,11 @@ private noncomputable def preimageS (S : Finset (Package N' V')) : Finset (Packa
     (Function.Injective.injOn embedPkg_injective))
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem mem_preimageS {S : Finset (Package N' V')} {p : Package N V} :
+theorem mem_preimageS {S : Finset (Package N' V')} {p : Package N V} :
     p ∈ preimageS S ↔ embedPkg p ∈ S := by
   simp [preimageS, Finset.mem_preimage]
 
-private theorem embedPkg_mem_real {p : Package N V}
+theorem embedPkg_mem_real {p : Package N V}
     {R_v : Real N V} {Delta_v : DepRel N V} {prov : ProvidesRel N V}
     (h : embedPkg p ∈ virtualReal R_v Delta_v prov) : p ∈ R_v := by
   have hemb : embedPkg p ∈ embedSet R_v := by

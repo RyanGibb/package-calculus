@@ -18,7 +18,7 @@ variable [DecidableEq N] [DecidableEq V] [DecidableEq G] [DecidableEq N'] [Decid
 variable [hcnm : Concurrent.HasConcurrentNames N V G N']
 variable [hcvr : Concurrent.HasConcurrentVersions V G V']
 
-private theorem embedPkg_injective (g : V → G) :
+theorem embedPkg_injective (g : V → G) :
     Function.Injective (Concurrent.embedPkg (N := N) (N' := N') (V' := V') g) := by
   intro ⟨n₁, v₁⟩ ⟨n₂, v₂⟩ h
   simp only [Concurrent.embedPkg, Prod.mk.injEq] at h
@@ -32,12 +32,12 @@ private noncomputable def preimageS (g : V → G) (S : Finset (Package N' V')) :
   S.preimage (Concurrent.embedPkg g) (Set.InjOn.mono (Set.subset_univ _)
     (Function.Injective.injOn (embedPkg_injective g)))
 
-private theorem mem_preimageS {g : V → G} {S : Finset (Package N' V')} {p : Package N V} :
+theorem mem_preimageS {g : V → G} {S : Finset (Package N' V')} {p : Package N V} :
     p ∈ preimageS g S ↔ Concurrent.embedPkg g p ∈ S := by
   simp [preimageS, Finset.mem_preimage]
 
 /-- Construct the parent-witness relation π as a Finset from Δ_C and S. -/
-private def soundnessπ (Δ_C : DepRel N V) (g : V → G)
+def soundnessπ (Δ_C : DepRel N V) (g : V → G)
     (S : Finset (Package N' V')) : Finset (Package N V × Package N V) :=
   Δ_C.biUnion (fun ⟨⟨n, v⟩, m, vs⟩ =>
     vs.filter (fun u =>
@@ -45,7 +45,7 @@ private def soundnessπ (Δ_C : DepRel N V) (g : V → G)
       (hcnm.granularN n (g v), hcvr.origV v) ∈ S)
     |>.image (fun u => ((m, u), (n, v))))
 
-private theorem mem_soundnessπ {Δ_C : DepRel N V} {g : V → G}
+theorem mem_soundnessπ {Δ_C : DepRel N V} {g : V → G}
     {S : Finset (Package N' V')} {pair : Package N V × Package N V} :
     pair ∈ soundnessπ Δ_C g S ↔
     ∃ n v m vs u, ((n, v), m, vs) ∈ Δ_C ∧
@@ -60,7 +60,7 @@ private theorem mem_soundnessπ {Δ_C : DepRel N V} {g : V → G}
   · rintro ⟨n, v, m, vs, u, hdep, hvS, huv, hintS, rfl⟩
     exact ⟨⟨⟨n, v⟩, m, vs⟩, hdep, u, ⟨huv, hintS, hvS⟩, rfl⟩
 
-private theorem embedPkg_mem_peerReal {g : V → G} {p : Package N V}
+theorem embedPkg_mem_peerReal {g : V → G} {p : Package N V}
     {R_C : Real N V} {Δ_C : DepRel N V} {Θ : PeerRel N V}
     (h : Concurrent.embedPkg g p ∈ peerReal (N' := N') (V' := V') R_C Δ_C Θ g) : p ∈ R_C := by
   simp only [peerReal, Concurrent.embedReal, Finset.mem_union, Finset.mem_image,
@@ -87,7 +87,7 @@ private theorem embedPkg_mem_peerReal {g : V → G} {p : Package N V}
       exact absurd h1 (hcnm.intermediateN_ne_granularN _ _ _ _ _)
     · simp at hmem'
 
-private theorem mem_peerDeps_dep2int {Δ_C : DepRel N V} {Θ : PeerRel N V} {g : V → G}
+theorem mem_peerDeps_dep2int {Δ_C : DepRel N V} {Θ : PeerRel N V} {g : V → G}
     {n : N} {v : V} {m : N} {vs : Finset V}
     (hdep : ((n, v), m, vs) ∈ Δ_C) :
     ((hcnm.granularN n (g v), hcvr.origV v),
@@ -97,7 +97,7 @@ private theorem mem_peerDeps_dep2int {Δ_C : DepRel N V} {Θ : PeerRel N V} {g :
   left; left
   exact ⟨⟨⟨n, v⟩, m, vs⟩, hdep, rfl⟩
 
-private theorem mem_peerDeps_int2dep {Δ_C : DepRel N V} {Θ : PeerRel N V} {g : V → G}
+theorem mem_peerDeps_int2dep {Δ_C : DepRel N V} {Θ : PeerRel N V} {g : V → G}
     {n : N} {v : V} {m : N} {vs : Finset V} {u₀ : V}
     (hdep : ((n, v), m, vs) ∈ Δ_C) (hu₀ : u₀ ∈ vs) :
     ((hcnm.intermediateN n v m, hcvr.origV u₀),
@@ -107,7 +107,7 @@ private theorem mem_peerDeps_int2dep {Δ_C : DepRel N V} {Θ : PeerRel N V} {g :
   left; right
   exact ⟨⟨⟨n, v⟩, m, vs⟩, hdep, u₀, hu₀, rfl⟩
 
-private theorem mem_peerDeps_peer {Δ_C : DepRel N V} {Θ : PeerRel N V} {g : V → G}
+theorem mem_peerDeps_peer {Δ_C : DepRel N V} {Θ : PeerRel N V} {g : V → G}
     {qn : N} {qv : V} {on : N} {vs₁ : Finset V} {m' : N} {ws' : Finset V} {ou : V}
     (hdep₁ : ((qn, qv), on, vs₁) ∈ Δ_C)
     (hu₁v : ou ∈ vs₁)

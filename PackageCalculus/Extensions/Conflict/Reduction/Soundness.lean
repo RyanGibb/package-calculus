@@ -15,24 +15,24 @@ variable {N' : Type*} [DecidableEq N'] {V' : Type*} [DecidableEq V']
 variable [hcn : HasConflictNames N V N'] [hcv : HasConflictVersions V V']
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem embedPkg_injective : Function.Injective (embedPkg : Package N V → Package N' V') := by
+theorem embedPkg_injective : Function.Injective (embedPkg : Package N V → Package N' V') := by
   intro ⟨n₁, v₁⟩ ⟨n₂, v₂⟩ h
   simp only [embedPkg, Prod.mk.injEq] at h
   exact Prod.ext (hcn.origN.injective h.1) (hcv.origV.injective h.2)
 
 /-- Computable partial inverse of `embedPkg` via `tryOrigN`/`tryOrigV`. -/
-private def tryInvPkg (p : Package N' V') : Option (Package N V) :=
+def tryInvPkg (p : Package N' V') : Option (Package N V) :=
   match hcn.tryOrigN p.1, hcv.tryOrigV p.2 with
   | some n, some v => some (n, v)
   | _, _ => none
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem tryInvPkg_embed (p : Package N V) :
+theorem tryInvPkg_embed (p : Package N V) :
     tryInvPkg (embedPkg p) = some p := by
   simp [tryInvPkg, embedPkg, hcn.tryOrigN_origN, hcv.tryOrigV_origV]
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem tryInvPkg_some {p' : Package N' V'} {p : Package N V}
+theorem tryInvPkg_some {p' : Package N' V'} {p : Package N V}
     (h : p ∈ tryInvPkg p') : embedPkg p = p' := by
   obtain ⟨n', v'⟩ := p'
   obtain ⟨n, v⟩ := p
@@ -48,16 +48,16 @@ private theorem tryInvPkg_some {p' : Package N' V'} {p : Package N V}
   | none, _ => simp at h
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem tryInvPkg_inj :
+theorem tryInvPkg_inj :
     ∀ a a' (b : Package N V), b ∈ tryInvPkg a → b ∈ tryInvPkg a' → a = a' := by
   intro a a' b ha ha'
   exact (tryInvPkg_some ha).symm.trans (tryInvPkg_some ha')
 
-private def preimageS (S : Finset (Package N' V')) : Finset (Package N V) :=
+def preimageS (S : Finset (Package N' V')) : Finset (Package N V) :=
   S.filterMap tryInvPkg tryInvPkg_inj
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq N'] [DecidableEq V'] in
-private theorem mem_preimageS {S : Finset (Package N' V')} {p : Package N V} :
+theorem mem_preimageS {S : Finset (Package N' V')} {p : Package N V} :
     p ∈ preimageS S ↔ embedPkg p ∈ S := by
   simp only [preimageS, Finset.mem_filterMap]
   constructor
@@ -67,7 +67,7 @@ private theorem mem_preimageS {S : Finset (Package N' V')} {p : Package N V} :
     exact ⟨embedPkg p, hp, tryInvPkg_embed p⟩
 
 omit [DecidableEq N] [DecidableEq V] in
-private theorem embedPkg_mem_real {p : Package N V} {R_Γ : Real N V} {Γ : ConflictRel N V}
+theorem embedPkg_mem_real {p : Package N V} {R_Γ : Real N V} {Γ : ConflictRel N V}
     (h : embedPkg p ∈ conflictReal R_Γ Γ) : p ∈ R_Γ := by
   simp only [conflictReal, embedSet, Finset.mem_union, Finset.mem_image, Finset.mem_biUnion] at h
   rcases h with ⟨q, hqR, hqeq⟩ | ⟨a, _, hmem⟩

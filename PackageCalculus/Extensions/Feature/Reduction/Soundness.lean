@@ -16,7 +16,7 @@ variable {N' : Type*} [DecidableEq N'] [hfn : HasFeatureNames N F N']
 
 omit [DecidableEq N] [DecidableEq V] [DecidableEq F] [Fintype F]
     [DecidableEq N'] in
-private theorem embedPkg_F_injective :
+theorem embedPkg_F_injective :
     Function.Injective (embedPkg F : Package N V → Package N' V) := by
   intro ⟨n₁, v₁⟩ ⟨n₂, v₂⟩ h
   simp only [embedPkg, Prod.mk.injEq] at h
@@ -28,14 +28,14 @@ noncomputable def soundnessWitness
     (Function.Injective.injOn embedPkg_F_injective))).image
     (fun p => (p, Finset.univ.filter (fun f => (hfn.featuredN p.1 f, p.2) ∈ S)))
 
-private theorem mem_soundnessWitness {S : Finset (Package N' V)}
+theorem mem_soundnessWitness {S : Finset (Package N' V)}
     {n : N} {v : V} (h : (hfn.origN n, v) ∈ S) :
     ((n, v), Finset.univ.filter (fun f => (hfn.featuredN n f, v) ∈ S)) ∈
       soundnessWitness S := by
   simp only [soundnessWitness, Finset.mem_image, Finset.mem_preimage, embedPkg]
   exact ⟨(n, v), h, rfl⟩
 
-private theorem soundnessWitness_elim {S : Finset (Package N' V)}
+theorem soundnessWitness_elim {S : Finset (Package N' V)}
     {pfs : Package N V × Finset F} (h : pfs ∈ soundnessWitness S) :
     ∃ n v, (hfn.origN n, v) ∈ S ∧
       pfs = ((n, v), Finset.univ.filter (fun f => (hfn.featuredN n f, v) ∈ S)) := by

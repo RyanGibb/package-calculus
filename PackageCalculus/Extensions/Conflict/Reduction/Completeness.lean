@@ -21,13 +21,13 @@ def completenessWitness (S_Γ : Finset (Package N V)) (Γ : ConflictRel N V) :
   (Γ.filter (fun ⟨_, n, vs⟩ => ∃ u ∈ vs, (n, u) ∈ S_Γ)).image (fun ⟨_, n, vs⟩ =>
     (hcn.syntheticN n vs, hcv.zeroV))
 
-private theorem mem_completenessWitness_embed {S_Γ : Finset (Package N V)} {Γ : ConflictRel N V}
+theorem mem_completenessWitness_embed {S_Γ : Finset (Package N V)} {Γ : ConflictRel N V}
     {p : Package N V} (hp : p ∈ S_Γ) :
     (embedPkg (N' := N') (V' := V') p) ∈ completenessWitness S_Γ Γ :=
   Finset.mem_union.mpr (Or.inl (Finset.mem_union.mpr (Or.inl
     (Finset.mem_image_of_mem embedPkg hp))))
 
-private theorem mem_completenessWitness_one {S_Γ : Finset (Package N V)} {Γ : ConflictRel N V}
+theorem mem_completenessWitness_one {S_Γ : Finset (Package N V)} {Γ : ConflictRel N V}
     {p : Package N V} {n : N} {vs : Finset V}
     (hg : (p, n, vs) ∈ Γ) (hp : p ∈ S_Γ) :
     (hcn.syntheticN n vs, hcv.oneV) ∈ completenessWitness S_Γ Γ := by
@@ -35,7 +35,7 @@ private theorem mem_completenessWitness_one {S_Γ : Finset (Package N V)} {Γ : 
   left; right
   exact ⟨⟨p, n, vs⟩, ⟨hg, hp⟩, rfl⟩
 
-private theorem mem_completenessWitness_zero {S_Γ : Finset (Package N V)} {Γ : ConflictRel N V}
+theorem mem_completenessWitness_zero {S_Γ : Finset (Package N V)} {Γ : ConflictRel N V}
     {p : Package N V} {n : N} {vs : Finset V}
     (hg : (p, n, vs) ∈ Γ) (hc : ∃ u ∈ vs, (n, u) ∈ S_Γ) :
     (hcn.syntheticN n vs, hcv.zeroV) ∈ completenessWitness S_Γ Γ := by
@@ -45,7 +45,7 @@ private theorem mem_completenessWitness_zero {S_Γ : Finset (Package N V)} {Γ :
 
 -- Helper: no element of conflictDeps has a syntheticN name as the package name component
 omit [DecidableEq N] [DecidableEq V] in
-private theorem no_synthetic_pkg_in_conflictDeps {Δ_Γ : DepRel N V} {Γ : ConflictRel N V}
+theorem no_synthetic_pkg_in_conflictDeps {Δ_Γ : DepRel N V} {Γ : ConflictRel N V}
     {n₀ : N} {vs₀ : Finset V} {v₀ : V'} {m : N'} {ws : Finset V'}
     (hd : ((hcn.syntheticN n₀ vs₀, v₀), m, ws) ∈ conflictDeps Δ_Γ Γ) : False := by
   simp only [conflictDeps, Finset.mem_union, Finset.mem_image, Finset.mem_biUnion] at hd
