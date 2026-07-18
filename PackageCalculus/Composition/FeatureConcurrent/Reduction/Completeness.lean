@@ -297,7 +297,6 @@ theorem cfComplete_vu_intermediate
     hcvr.origV w1 = hcvr.origV w2 :=
   congrArg _ (hres.π_functional m w1 w2 (pn, pv) hπ1 hπ2)
 
-set_option maxHeartbeats 3200000 in
 theorem cfComplete_dep_closure_aux
     (p : Package N_FC V_FC)
     (hp : p ∈ cfCompletenessWitness (N_FC := N_FC) (V_FC := V_FC) S_CF π Δ_f Δ_a g)
@@ -584,7 +583,6 @@ theorem cfComplete_vu_granular_same
   have hv_ne : w1 ≠ w2 := fun h => h_ne (congrArg hcvr.origV h)
   exact absurd hg (hres.version_granularity n w1 w2 fs1 fs2 hS1 hS2 hv_ne)
 
-set_option maxHeartbeats 6400000 in
 theorem cfComplete_version_unique :
     VersionUnique (cfCompletenessWitness (N_FC := N_FC) (V_FC := V_FC) S_CF π Δ_f Δ_a g) := by
   intro nm cv₁ cv₂ h₁ h₂
@@ -606,6 +604,7 @@ theorem cfComplete_version_unique :
   obtain ⟨h1n, rfl⟩ := heq₁ <;>
   obtain ⟨h2n, rfl⟩ := heq₂ <;>
   (first
+    | cf_name_clash (h1n.symm.trans h2n)
     | (-- granular_orig × granular_orig (must come before featured)
        have ⟨hfn_eq, hg_eq⟩ := hcnm.granularN_injective (h1n.symm.trans h2n)
        have hn_eq : n₁ = n₂ := Feature.FeatureName.orig.inj hfn_eq
@@ -620,7 +619,6 @@ theorem cfComplete_version_unique :
        exact cfComplete_vu_granular_same (R := R) (Δ_f := Δ_f) (Δ_a := Δ_a)
          (support := support) (g := g) (r := r) (S_CF := S_CF) (π := π) hres
          hS₁ hS₂ hg_eq)
-    | cf_name_clash (h1n.symm.trans h2n)
     | (have hinj := hcfi.cfIntermediateN_injective _ _ _ _ _ _ (h1n.symm.trans h2n)
        obtain ⟨hpn, hpv, hn⟩ := hinj
        subst hpn; subst hpv; subst hn
